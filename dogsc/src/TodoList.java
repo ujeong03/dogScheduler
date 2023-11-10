@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 public class TodoList extends JPanel {
 
     private JLabel dateLabel;
@@ -18,9 +19,7 @@ public class TodoList extends JPanel {
     private TodoDBConnection todoDBConnection;
 
     public TodoList() {
-        //Todo 여기 수정해야함!
-//        //TodoDB에 연결하기
-//        //SQLite 데이터 베이스 경로
+        //TodoList 클래스의 생성자에서 TodoDBConnection 객체 생성
         todoDBConnection = new TodoDBConnection();
 
         // 날짜 관련 코드
@@ -44,6 +43,7 @@ public class TodoList extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 currentDate = getPreviousDate(currentDate);
                 updateDateLabel();
+                loadTodosFromDatabase();
             }
         });
 
@@ -53,9 +53,11 @@ public class TodoList extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 currentDate = getNextDate(currentDate);
                 updateDateLabel();
+                loadTodosFromDatabase();
             }
         });
 
+        //날짜 이동 패널 만들기
         dateControlPanel.add(prevDayButton);
         dateControlPanel.add(dateLabel);
         dateControlPanel.add(nextDayButton);
@@ -73,8 +75,13 @@ public class TodoList extends JPanel {
         addTodoButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //todoDBConnection.getConnection();
+
                 todoDBConnection.addTodoDB(todoTextField.getText(),currentDate);
                 todoTextField.setText(""); // 입력 필드 비우기
+                //todoDBConnection.closeConnection();
+
+                addTodoItem(todoTextField.getText(), false);
             }
         });
 
@@ -87,10 +94,14 @@ public class TodoList extends JPanel {
         todoListPanel.setLayout(new BoxLayout(todoListPanel, BoxLayout.Y_AXIS));
         JScrollPane scrollPane = new JScrollPane(todoListPanel);
         add(scrollPane, BorderLayout.CENTER);
+        loadTodosFromDatabase();
+
+
     }
 
 
-
+    // todo 메서드 모음
+    // todo 날짜 메서드
     //날짜 업데이트 메서드
     private void updateDateLabel() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -119,15 +130,54 @@ public class TodoList extends JPanel {
         return calendar.getTime();
     }
 
-    private void addTodoItem(String todoText) {
-        // DB에 투두 항목 추가
-        // 데이터베이스 연동 및 INSERT 쿼리 실행
+    //todo 투두 메서드
+
+    //데이터베이스에서 투두 가져오기
+    private void loadTodosFromDatabase() {
+        try {
+        todoDBConnection.getConnection();
+
+        // 현재 날짜에 해당하는 투두 가져오기
+        List<String> todos = todoDBConnection.getTodosForDate(currentDate);
+
+        //디버깅 출력문
+        System.out.println("Todos from database: " + todos);
+
+        //기존의 투두 항목을 모두 제거
+        todoListPanel.removeAll();
+
+        for (String todo : todos) {
+            addTodoItem(todo, false);
+        }
+        //UI를 다시 그리기
+        todoListPanel.revalidate();
+        todoListPanel.repaint();
+    } catch (Exception e)
+
+    {
+        e.printStackTrace();
+    }finally{
+        todoDBConnection.closeConnection();
+        }}
 
 
+    private void addTodoItem(String todoText, boolean isCompleted) {
         // 새로운 투두 아이템 패널 생성
         JPanel todoItemPanel = new JPanel();
         JCheckBox checkBox = new JCheckBox();
         JLabel todoTextLabel = new JLabel(todoText);
+
+        checkBox.setSelected(isCompleted); // 투두 항목의 상태를 설정
+
+        checkBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int isCompleted = checkBox.isSelected() ? 1 : 0; // 체크 박스 상태에 따라 1 또는 0 설정
+                todoDBConnection.getConnection();
+                todoDBConnection.updateTodoChecked(todoText, isCompleted);
+                todoDBConnection.closeConnection();
+            }
+        });
 
         todoItemPanel.add(checkBox);
         todoItemPanel.add(todoTextLabel);

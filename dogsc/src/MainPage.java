@@ -2,7 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MainPage {
-    private JPanel calendarPaner;
+    private JPanel calendarPanel;
     private JPanel reminderPanel;
     private JPanel todoPanel;
     private JPanel dogCarePanel;
