@@ -1,77 +1,105 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.Scanner;
 
+// 강아지의 친밀도, 레벨을 반환하거나 상승시키며, 강아지를 성장시키는 강아지 레벨 클래스
 public class DogLevel {
-    private int growthStage;
     private String closenessPath, levelPath;
     private int closeness, level;
-    private ControlReward rewardController;
-    private DogCare dogCare;
+    private String dogImagePath;
 
     public DogLevel() {
         this.closenessPath = "dog_txt/closeness.txt";
         this.levelPath = "dog_txt/level.txt";
+        this.closeness = this.getCloseness();
+        this.level = this.getLevel();
+        this.dogImagePath = this.growUp(this.getLevel());
     }
 
-
+    // 파일에서 현재 친밀도 읽고 반환
     public int getCloseness() {
         try {
             File closenessfile = new File(closenessPath);
             Scanner scanner = new Scanner(closenessfile);
+
             while (scanner.hasNext())
-                closeness = scanner.nextInt();
+                this.closeness = scanner.nextInt();
             scanner.close();
-            return closeness;
+
+            return this.closeness;
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
             return -1;
         }
     }
 
+    // 파일에서 현재 레벨 읽고 반환
     public int getLevel() {
         try {
             File levelfile = new File(levelPath);
             Scanner scanner = new Scanner(levelfile);
+
             while (scanner.hasNext())
-                level = scanner.nextInt();
+                this.level = scanner.nextInt();
             scanner.close();
-            return level;
+
+            return this.level;
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
             return -1;
         }
     }
 
-    //todo 친밀도 num만큼 상승시킨 후 파일에 저장
+    // 친밀도를 상승시키고 파일에 저장
     public void increaseCloseness(int num) {
-        closeness = getCloseness();
-        closeness += num;
+        this.closeness += num;
 
-    }
-
-    //todo 레벨 1 상승시킨 후 파일에 저장, 친밀도 0으로 초기화 후 파일에 저장
-    public void increaseLevel() {
-        level = getLevel();
-        level++;
-
-        closeness = 0;
-    }
-
-    public int growUp() {
-        level = getLevel();
-
-        if (level >= 40) {
-            growthStage = 4;
-        } else if (level >= 30) {
-            growthStage = 3;
-        } else if (level >= 20) {
-            growthStage = 2;
-        } else if (level >= 10) {
-            growthStage = 1;
-        } else if (level >= 0) {
-            growthStage = 0;
+        try {
+            FileWriter closenessFileWriter = new FileWriter(closenessPath, false);
+            BufferedWriter bw = new BufferedWriter(closenessFileWriter);
+            bw.write(Integer.toString(this.closeness));
+            bw.close();
+        }catch(IOException e){
+            e.printStackTrace();
         }
-        return growthStage;
+    }
+
+    // 친밀도 100이상이면 친밀도 -100, 레벨 +1 연산 후 파일에 저장.
+    public void increaseLevel() {
+        if(this.closeness >= 100){
+            try {
+                this.closeness -= 100;
+
+                FileWriter closenessFileWriter = new FileWriter(closenessPath, false);
+                BufferedWriter bw1 = new BufferedWriter(closenessFileWriter);
+                bw1.write(Integer.toString(this.closeness));
+                bw1.close();
+
+
+                FileWriter levelFileWriter = new FileWriter(levelPath, false);
+                BufferedWriter bw2 = new BufferedWriter(levelFileWriter);
+                bw2.write(Integer.toString(++this.level));
+                bw2.close();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // 특정 레벨에 도달 시 성장한 강아지의 이미지 경로를 반환
+    public String growUp(int level) {
+        if (level >= 50) {
+            this.dogImagePath = "dog_image/dog_big_costume.png";
+        } else if (level >= 40) {
+            this.dogImagePath = "dog_image/dog_big.png";
+        } else if (level >= 30) {
+            this.dogImagePath = "dog_image/dog_middle_costume.png";
+        } else if (level >= 20) {
+            this.dogImagePath = "dog_image/dog_middle.png";
+        } else if (level >= 10) {
+            this.dogImagePath = "dog_image/dog_small_costume.png";
+        } else if (level >= 0) {
+            this.dogImagePath = "dog_image/dog_small.png";
+        }
+        return this.dogImagePath;
     }
 }
