@@ -1,7 +1,7 @@
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.Scanner;
 
+// 보상의 반환, 추가, 사용 등 관리 클래스
 public class ControlReward {
     public int rewardCount;
     public String rewardPath;
@@ -10,35 +10,44 @@ public class ControlReward {
         this.rewardPath = "dog_txt/reward.txt";
     }
 
-    // 현재 보상 개수 반환
+    // 파일에서 현재 보상 개수 읽고 반환
     public int getReward() {
         try {
             File rewardfile = new File(rewardPath);
             Scanner scanner = new Scanner(rewardfile);
             while (scanner.hasNext())
-                rewardCount = scanner.nextInt();
+                this.rewardCount = scanner.nextInt();
             scanner.close();
-            return rewardCount;
+            return this.rewardCount;
         } catch (FileNotFoundException e) {
             System.out.println("file not found");
             return -1;
         }
     }
 
-    //todo 투두 달성하고 보상 받은 만큼 개수 증가 후 파일에 저장
+    // 투두 달성한 후 받은 보상을 추가하고 파일에 저장
     public void addReward(int num){
-        rewardCount = getReward();
-        rewardCount += num;
+        try {
+            this.rewardCount += num;
 
+            FileWriter rewardFileWriter = new FileWriter(rewardPath, false);
+            BufferedWriter bw = new BufferedWriter(rewardFileWriter);
+            bw.write(Integer.toString(this.rewardCount));
+            bw.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
-    // todo 보상 사용 시 개수 감소 후 파일에 저장
+    // 사용한 보상만큼 감소시키고 파일에 저장
     public void useReward() {
-        rewardCount = getReward();
-
-        if (rewardCount > 0) {
-            rewardCount--;
-
+        try {
+            FileWriter rewardFileWriter = new FileWriter(rewardPath, false);
+            BufferedWriter bw = new BufferedWriter(rewardFileWriter);
+            bw.write(Integer.toString(--this.rewardCount));
+            bw.close();
+        }catch(IOException e){
+            e.printStackTrace();
         }
     }
 }
