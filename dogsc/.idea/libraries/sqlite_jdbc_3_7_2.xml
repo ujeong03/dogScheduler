@@ -5,7 +5,7 @@
     </CLASSES>
     <JAVADOC />
     <SOURCES >
-            <root url="jar://$PROJECT_DIR$/src/sqlite-jdbc-3.7.2.jar!/" />
+      <root url="jar://$PROJECT_DIR$/src/sqlite-jdbc-3.7.2.jar!/" />
     </SOURCES>
   </library>
 </component>
