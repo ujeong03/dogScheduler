@@ -1,9 +1,10 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DateDetailDialog extends JDialog {
     private JLabel dateLabel;
@@ -12,19 +13,27 @@ public class DateDetailDialog extends JDialog {
     private JButton saveButton;
     private Calendar calendar;
     private List<SchedulePanel> schedulePanels;
-    private JButton calendarButton; // 캘린더 버튼 추가
+    private JButton calendarButton;
+    private int day;
+    private JButton dayButton;
 
-    public DateDetailDialog(JFrame parent, String title, boolean modal, int day, JButton calendarButton) {
+
+    public DateDetailDialog(JFrame parent, String title, boolean modal, int day, JButton dayButton) {
         super(parent, title, modal);
         setSize(800, 600);
         setLayout(new BorderLayout());
 
+        this.day = day;
+        this.dayButton = dayButton;
+
         calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_MONTH, day);
+        schedulePanels = new ArrayList<>();
+        this.calendarButton = calendarButton;
+
+        updateCalendarButtonText();
 
         dateLabel = new JLabel("", JLabel.CENTER);
         dateLabel.setFont(new Font("Arial", Font.BOLD, 24));
-        updateDateLabel(day);
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(dateLabel, BorderLayout.NORTH);
@@ -34,21 +43,21 @@ public class DateDetailDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(schedulesPanel);
         add(scrollPane, BorderLayout.CENTER);
 
-        schedulePanels = new ArrayList<>();
-
         addButton = new JButton("+");
         addButton.addActionListener(e -> addSchedulePanel());
         topPanel.add(addButton, BorderLayout.SOUTH);
-
-        // 캘린더 버튼 설정
-        this.calendarButton = calendarButton;
-        updateCalendarButtonText(); // 캘린더 버튼 텍스트 업데이트
 
         add(topPanel, BorderLayout.NORTH);
 
         JPanel bottomPanel = new JPanel(new FlowLayout());
         saveButton = new JButton("저장");
-        saveButton.addActionListener(e -> saveSchedules());
+        saveButton.addActionListener(e -> {
+            try {
+                saveSchedules();
+            } catch (ClassNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
         bottomPanel.add(saveButton);
         add(bottomPanel, BorderLayout.SOUTH);
     }
@@ -69,36 +78,82 @@ public class DateDetailDialog extends JDialog {
         schedulePanels.add(schedulePanel);
         schedulesPanel.add(schedulePanel);
 
-        revalidate();
-        repaint();
+        SwingUtilities.invokeLater(() -> {
+            revalidate();
+            repaint();
+            updateCalendarButtonText();
+        });
     }
 
-    private void saveSchedules() {
-        // 저장 버튼을 눌렀을 때 실행되는 메서드
-        // 각 SchedulePanel에서 일정 정보를 가져와 데이터베이스에 저장하도록 구현해야 함
-        // 여기에서는 저장된 일정 정보를 출력하는 메시지만 표시
-        StringBuilder scheduleText = new StringBuilder();
-        for (SchedulePanel schedulePanel : schedulePanels) {
-            String title = schedulePanel.getTitle();
-            boolean isReminder = schedulePanel.isReminderSelected();
-            boolean isHomework = schedulePanel.isHomeworkSelected();
 
-            scheduleText.append("* ").append(title).append(" (리마인더: ").append(isReminder).append(", 과제: ").append(isHomework).append(")\n");
+
+    private void saveSchedules() throws ClassNotFoundException {
+        String url = "jdbc:sqlite:src/todoDB.sqlite";
+        Class.forName("org.sqlite.JDBC");
+        createTableIfNotExists();
+        try (Connection conn = DriverManager.getConnection(url)) {
+            for (SchedulePanel schedulePanel : schedulePanels) {
+                String title = schedulePanel.getTitle();
+                boolean isReminder = schedulePanel.isReminderSelected();
+                boolean isHomework = schedulePanel.isHomeworkSelected();
+
+                String sql = "INSERT INTO schedules (title, isReminder, isHomework) VALUES (?, ?, ?)";
+                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                    pstmt.setString(1, title);
+                    pstmt.setBoolean(2, isReminder);
+                    pstmt.setBoolean(3, isHomework);
+                    pstmt.executeUpdate();
+                }
+            }
+            JOptionPane.showMessageDialog(this, "일정이 저장되었습니다.");
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            JOptionPane.showMessageDialog(this, "데이터베이스 저장 중 오류가 발생했습니다.");
         }
+        List<String> schedulesForDay = schedulePanels.stream()
+                .map(SchedulePanel::getTitle)
+                .collect(Collectors.toList());
+        ((CalendarWindow) getParent()).updateDayButton(day, schedulesForDay);
 
-        JOptionPane.showMessageDialog(this, "일정이 저장되었습니다:\n" + scheduleText.toString());
-
-        // 저장 후 캘린더 버튼 업데이트
         updateCalendarButtonText();
     }
 
+    private void createTableIfNotExists() {
+        String url = "jdbc:sqlite:src/todoDB.sqlite";
+
+        String sql = "CREATE TABLE IF NOT EXISTS schedules ("
+                + "id INTEGER PRIMARY KEY,"
+                + "title TEXT NOT NULL,"
+                + "isReminder BOOLEAN NOT NULL,"
+                + "isHomework BOOLEAN NOT NULL);";
+
+        try (Connection conn = DriverManager.getConnection(url);
+             Statement stmt = conn.createStatement()) {
+            stmt.execute(sql);
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+
+
+    public void removeSchedulePanel(SchedulePanel schedulePanel) {
+        schedulePanels.remove(schedulePanel);
+        schedulesPanel.remove(schedulePanel);
+
+        SwingUtilities.invokeLater(() -> {
+            revalidate();
+            repaint();
+            updateCalendarButtonText();
+        });
+    }
+
     private void updateCalendarButtonText() {
-        // 캘린더 버튼 텍스트 업데이트
         StringBuilder buttonText = new StringBuilder("일정\n");
         for (SchedulePanel schedulePanel : schedulePanels) {
             buttonText.append("* ").append(schedulePanel.getTitle()).append("\n");
         }
-        calendarButton.setText(buttonText.toString());
+        //calendarButton.setText(buttonText.toString());
     }
 
     private class SchedulePanel extends JPanel {
@@ -119,7 +174,7 @@ public class DateDetailDialog extends JDialog {
             add(homeworkCheckBox);
 
             JButton deleteButton = new JButton("X");
-            deleteButton.addActionListener(e -> deleteSchedulePanel()); // X 버튼 클릭 시 삭제 메서드 호출
+            deleteButton.addActionListener(e -> deleteSchedulePanel());
             add(deleteButton);
         }
 
@@ -136,15 +191,8 @@ public class DateDetailDialog extends JDialog {
         }
 
         private void deleteSchedulePanel() {
-            schedulePanels.remove(this);
-            schedulesPanel.remove(this);
-
-            revalidate();
-            repaint();
-
-            // 삭제 후 캘린더 버튼 업데이트
-            updateCalendarButtonText();
+            DateDetailDialog parentDialog = (DateDetailDialog) SwingUtilities.getWindowAncestor(this);
+            parentDialog.removeSchedulePanel(this);
         }
     }
 }
-
