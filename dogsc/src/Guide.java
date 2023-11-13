@@ -7,6 +7,7 @@ public class Guide extends JFrame{
     private JLabel imageLabel;
     private JButton nextButton;
     private JButton prevButton;
+
     private int currentImageIndex = 0 ;
     private String[] imagePaths = new String[]{
             "guide_page_img/guide_img1.png",
@@ -18,7 +19,7 @@ public class Guide extends JFrame{
 
         // 프레임을 전체 화면 크기로 만들기
         setExtendedState(JFrame.MAXIMIZED_BOTH);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         imageLabel = new JLabel();
         prevButton = new JButton("이전");
@@ -40,6 +41,8 @@ public class Guide extends JFrame{
                 showNextImage();
             }
         });
+
+
 
         // 상단 패널에 이전 버튼과 다음 버튼 추가
         JPanel buttonPanel = new JPanel();
@@ -82,7 +85,7 @@ public class Guide extends JFrame{
         }
     }
 
-    public static void main(String[] args) {
+    public static void main() {
         SwingUtilities.invokeLater(() -> {
             new Guide();
         });

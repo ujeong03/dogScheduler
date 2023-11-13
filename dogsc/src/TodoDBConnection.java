@@ -1,3 +1,4 @@
+import javax.xml.transform.Result;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -77,23 +78,26 @@ public class TodoDBConnection {
             }
         }
     }
-
-
-
-    //체크 박스 누를 때
+    //체크박스누를떼
     public void updateTodoChecked(String todoText, int is_completed) {
         try {
+            initializeDatabaseConnection();
+
             String updateQuery = "UPDATE todoDB SET is_completed = ? WHERE todoText = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
-                preparedStatement.setInt(1, is_completed);
                 preparedStatement.setString(2, todoText);
+                preparedStatement.setInt(1, is_completed);
                 preparedStatement.executeUpdate();
                 connection.commit(); // 변경 사항 커밋
+
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
+
     }
+    
+    
 
     //해당 날짜의 투두 가져오기
     public List<String> getTodosForDate(Date date){
@@ -117,4 +121,29 @@ public class TodoDBConnection {
         }
         return todos;
     }
+    //체크박스 상태
+    public int getTodoCompletedStatus(String todo){
+        int isCompleted =0 ; //기본적으로 0으로 초기화
+
+        try{
+            String selectSQL = "SELECT is_completed FROM todoDB WHERE todoText=?";
+
+            try(PreparedStatement statement = connection.prepareStatement(selectSQL)) {
+                statement.setString(1, todo);
+                ResultSet resultSet = statement.executeQuery();
+
+                if (resultSet.next()) {
+                    //결과가 있따면 is_completed 값을 가져옴
+                    isCompleted = resultSet.getInt("is_completed");
+                }
+            }
+        } catch(SQLException e){
+            e.printStackTrace();
+        }
+        return isCompleted;
+    }
+
+
 }
+    
+    

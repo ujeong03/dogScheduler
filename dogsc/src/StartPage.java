@@ -36,6 +36,8 @@ public class StartPage extends JFrame {
 
 // '시작' 버튼을 생성하고 액션 리스너를 추가합니다.
         JButton startButton = new JButton("시작");
+        startButton.addActionListener(e -> dispose());
+        startButton.addActionListener(e -> MainPage.main());
         startButton.setBounds(imageIcon.getIconWidth() - 200, 20, 160, 40);
         startButton.setPreferredSize(new Dimension(200, 50)); // 버튼의 크기를 설정합니다.
         startButton.setOpaque(true);
@@ -45,14 +47,6 @@ public class StartPage extends JFrame {
         startButton.setForeground(Color.WHITE);
 
 
-        startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // '시작' 버튼 클릭 시, 메인 페이지로 이동하는 코드를 작성하세요.
-                System.out.println("메인 페이지로 이동");
-            }
-        });
-
 // '사용자 가이드' 버튼을 생성하고 액션 리스너를 추가합니다.
         JButton guideButton = new JButton("사용자 가이드");
         guideButton.setPreferredSize(new Dimension(200, 50)); // 버튼의 크기를 설정합니다.
@@ -61,18 +55,7 @@ public class StartPage extends JFrame {
         guideButton.setBorderPainted(false); // 필요에 따라 버튼의 테두리를 제거합니다.
         guideButton.setBackground(Color.BLUE);
         guideButton.setForeground(Color.WHITE);
-
-
-
-
-
-        guideButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // '사용자 가이드' 버튼 클릭 시, 사용자 가이드 페이지로 이동하는 코드를 작성하세요.
-                System.out.println("사용자 가이드 페이지로 이동");
-            }
-        });
+        guideButton.addActionListener(e -> Guide.main());
 
 // 버튼 패널에 버튼들을 추가합니다.
         buttonPanel.add(startButton);
@@ -86,9 +69,6 @@ public class StartPage extends JFrame {
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
         add(bottomPanel, BorderLayout.EAST); // 이 패널을 창의 오른쪽에 배치합니다.
-
-
-
 
 
         // 기본 종료 작업을 설정합니다.
