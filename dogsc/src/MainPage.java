@@ -8,7 +8,7 @@ public class MainPage {
     private JPanel dogCarePanel;
     private JPanel mainFrame;
 
-    public static void main() {
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             JFrame mainFrame = new JFrame("메인 페이지");
 

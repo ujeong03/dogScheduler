@@ -24,7 +24,7 @@ public class DogPage {
         frame.setSize(1200,800);
         frame.setResizable(false);
         frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setVisible(true);
 
         // contentpane 생성
@@ -133,10 +133,5 @@ public class DogPage {
         rewardLabel.setText("보상 : " + controlReward.getReward() + "개");
         levelLabel.setText("level " + dogLevel.getLevel());
         closenessProgressBar.setValue(dogLevel.getCloseness());
-    }
-
-    // 메인 메서드
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new DogPage());
     }
 }

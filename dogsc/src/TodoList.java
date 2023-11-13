@@ -81,7 +81,7 @@ public class TodoList extends JPanel {
                 todoTextField.setText(""); // 입력 필드 비우기
                 //todoDBConnection.closeConnection();
 
-                addTodoItem(todoTextField.getText(), false);
+                addTodoItem(todoTextField.getText(), 0);
             }
         });
 
@@ -147,7 +147,8 @@ public class TodoList extends JPanel {
         todoListPanel.removeAll();
 
         for (String todo : todos) {
-            addTodoItem(todo, false);
+            int isCompleted = todoDBConnection.getTodoCompletedStatus(todo);
+            addTodoItem(todo, isCompleted);
         }
         //UI를 다시 그리기
         todoListPanel.revalidate();
@@ -161,13 +162,13 @@ public class TodoList extends JPanel {
         }}
 
 
-    private void addTodoItem(String todoText, boolean isCompleted) {
+    private void addTodoItem(String todoText, int isCompleted) {
         // 새로운 투두 아이템 패널 생성
         JPanel todoItemPanel = new JPanel();
         JCheckBox checkBox = new JCheckBox();
         JLabel todoTextLabel = new JLabel(todoText);
 
-        checkBox.setSelected(isCompleted); // 투두 항목의 상태를 설정
+        checkBox.setSelected(isCompleted==1); // 투두 항목의 상태를 설정
 
         checkBox.addActionListener(new ActionListener() {
             @Override
@@ -176,6 +177,7 @@ public class TodoList extends JPanel {
                 todoDBConnection.getConnection();
                 todoDBConnection.updateTodoChecked(todoText, isCompleted);
                 todoDBConnection.closeConnection();
+                loadTodosFromDatabase(); //체크박스가 클릭될 때마다 데이터 다시 불러오기
             }
         });
 
