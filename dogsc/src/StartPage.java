@@ -49,7 +49,8 @@ public class StartPage extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // '시작' 버튼 클릭 시, 메인 페이지로 이동하는 코드를 작성하세요.
-                System.out.println("메인 페이지로 이동");
+                dispose();
+                MainPage.main();
             }
         });
 
@@ -70,7 +71,7 @@ public class StartPage extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // '사용자 가이드' 버튼 클릭 시, 사용자 가이드 페이지로 이동하는 코드를 작성하세요.
-                System.out.println("사용자 가이드 페이지로 이동");
+                new Guide();
             }
         });
 
