@@ -17,13 +17,20 @@ public class MainCalendar extends JPanel {
     private JPanel calendarPanel;
     private CalendarDBConnection calendarDB;
 
-
     public MainCalendar() {
         calendarDB = new CalendarDBConnection();
         setLayout(new BorderLayout());
 
-        // 캘린더 버튼생성
-        JButton openCalendarButton = new JButton("CALENDAR");
+        // 이번주의 첫날과 끝날을 가지고 초기화하기
+        Calendar calendar = Calendar.getInstance();
+        currentStartDate = getStartOfWeek(calendar.getTime());
+        currentDate = currentStartDate; // Initialize currentDate
+
+        //메인 캘린더 버튼 컨트롤러
+        JPanel calendarControlPanel = new JPanel();
+
+        // 캘린더 버튼 생성
+        openCalendarButton = new JButton("CALENDAR");
         // 캘린더 버튼 작동
         openCalendarButton.addActionListener((new ActionListener() {
             @Override
@@ -33,10 +40,6 @@ public class MainCalendar extends JPanel {
         }));
 
 
-        // Initialize with the current week's start and end dates
-        Calendar calendar = Calendar.getInstance();
-        currentStartDate = getStartOfWeek(calendar.getTime());
-        currentDate = currentStartDate; // Initialize currentDate
 
         // 이전 주 버튼
         prevButton = new JButton("<");
@@ -56,77 +59,97 @@ public class MainCalendar extends JPanel {
             }
         });
 
+        calendarControlPanel.add(prevButton);
+        calendarControlPanel.add(openCalendarButton);
+        calendarControlPanel.add(nextButton);
+
         // 캘린더 패널
         calendarPanel = new JPanel();
-        calendarPanel.setLayout(new GridLayout(2, 7)); // 7일씩 나열
+        calendarPanel.setLayout(new GridLayout(3, 7)); // 7일씩 나열
 
         updateCalendar(); // 캘린더 업데이트
 
         // 버튼과 캘린더 패널을 프레임에 추가
-        add(openCalendarButton,BorderLayout.NORTH);
-        add(prevButton, BorderLayout.WEST);
-        add(nextButton, BorderLayout.EAST);
+        add(calendarControlPanel, BorderLayout.NORTH);
         add(calendarPanel, BorderLayout.CENTER);
     }
 
     private void showPreviousWeek() {
         // 이전 주로 이동
         currentDate = getPreviousWeekStart(currentDate);
+        currentStartDate = getPreviousWeekStart(currentStartDate);
         updateCalendar();
     }
 
     private void showNextWeek() {
         // 다음 주로 이동
         currentDate = getNextWeekStart(currentDate);
+        currentStartDate = getNextWeekStart(currentStartDate);
         updateCalendar();
     }
 
     private void updateCalendar() {
         calendarPanel.removeAll();
 
-        // 현재 주와 다음 주의 일자를 가져와서 표시
+        // 요일 표시
+        String[] daysOfWeek = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        for (String day : daysOfWeek) {
+            JLabel dayLabel = new JLabel(day, JLabel.CENTER);
+            if ("Sun".equals(day)){
+                dayLabel.setForeground(Color.RED);
+            } else if ("Sat".equals(day)) {
+                dayLabel.setForeground(Color.BLUE);
+            }
+            calendarPanel.add(dayLabel);
+        }
+
+        // 현재 주 표시
         List<Date> weekDates = getWeekDates(currentDate);
         for (Date date : weekDates) {
-            final Date currentDate = date;
-            JButton dateButton = new JButton(new SimpleDateFormat("MM-dd").format(date));
-            dateButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    // 해당 날짜의 일정 불러오기
-                    showScheduleForDate(currentDate);
-                }
-            });
-            calendarPanel.add(dateButton);
+            JPanel datePanel = new JPanel(new BorderLayout());
+
+            JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
+            dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
+            datePanel.add(dateLabel, BorderLayout.NORTH);
+
+            JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
+            scheduleLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
+            datePanel.add(scheduleLabel, BorderLayout.CENTER);
+
+            calendarPanel.add(datePanel);
         }
 
-        // Display dates for the next week
+        // 다음 주 표시
         List<Date> nextWeekDates = getWeekDates(getNextWeekStart(currentStartDate));
         for (Date date : nextWeekDates) {
-            final Date currentDate = date;
-            JButton dateButton = new JButton(new SimpleDateFormat("MM-dd").format(date));
-            dateButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    showScheduleForDate(currentDate);
-                }
-            });
-            calendarPanel.add(dateButton);
-        }
+            JPanel datePanel = new JPanel(new BorderLayout());
 
+            JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
+            dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
+            datePanel.add(dateLabel, BorderLayout.NORTH);
+
+            JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
+            scheduleLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
+            datePanel.add(scheduleLabel, BorderLayout.CENTER);
+
+            calendarPanel.add(datePanel);
+        }
         // UI 업데이트
         revalidate();
         repaint();
     }
 
-    private void showScheduleForDate(Date date) {
-        // 해당 날짜의 일정을 가져와서 표시
+    //날짜에 맞춰 스케쥴 보여주기
+    private String getScheduleText(Date date) {
         List<String> schedules = calendarDB.getSchedulesForDate(date);
         StringBuilder message = new StringBuilder();
         for (String schedule : schedules) {
-            message.append(schedule).append("\n");
+            message.append(schedule).append("<br>");
         }
-        JOptionPane.showMessageDialog(this, message.toString(), "일정", JOptionPane.INFORMATION_MESSAGE);
+        return "<html>" + message.toString() + "</html>";
     }
+
+
 
     private List<Date> getWeekDates(Date startDate) {
         // 주의 시작일을 기준으로 7일간의 일자를 가져옴

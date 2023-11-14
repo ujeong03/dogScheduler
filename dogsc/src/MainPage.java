@@ -22,21 +22,6 @@ public class MainPage {
 
             JPanel contentPanel = new JPanel(new GridLayout(2, 2));
 
-            //JPanel calendarPanel = new JPanel();
-
-//            // 캘린더 버튼생성
-//            JButton openCalendarButton = new JButton("CALENDAR");
-//            // 캘린더 버튼 작동
-//            openCalendarButton.addActionListener((new ActionListener() {
-//                @Override
-//                public void actionPerformed(ActionEvent e) {
-//                   new CalendarWindow();
-//                }
-//            }));
-            //캘린더 패널에 버튼 추가
-          //  calendarPanel.add(openCalendarButton);
-            // 메인캘린더 보이게 하기
-//            calendarPanel.add(new MainCalendar());
 
 
             JPanel reminderPanel = new JPanel();

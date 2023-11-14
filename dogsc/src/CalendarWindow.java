@@ -75,7 +75,7 @@ public class CalendarWindow extends JFrame {
         daysPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         calendarPanel.add(daysPanel, BorderLayout.CENTER);
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 MMMM", Locale.KOREA);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy . MM", Locale.KOREA);
         monthLabel.setText(sdf.format(calendar.getTime()));
 
         calendar.set(Calendar.DAY_OF_MONTH, 1);

@@ -71,6 +71,38 @@ public class TodoDBConnection {
         }
     }
 
+    //투두 수정
+    public void modTodoDB(String oldText, String newText) {
+        try {
+            initializeDatabaseConnection();
+            String updateQuery = "UPDATE todoDB SET todoText = ? WHERE todoText = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
+                preparedStatement.setString(1, newText);
+                preparedStatement.setString(2, oldText);
+                preparedStatement.executeUpdate();
+                connection.commit();
+            }
+        } catch (SQLException e) {
+            handleSQLException(e);
+        }
+    }
+
+    //투두 삭제
+    public void delTodoDB(String todoText) {
+        try {
+            initializeDatabaseConnection();
+            String deleteQuery = "DELETE FROM todoDB WHERE todoText = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery)) {
+                preparedStatement.setString(1, todoText);
+                preparedStatement.executeUpdate();
+                connection.commit();
+            }
+        } catch (SQLException e) {
+            handleSQLException(e);
+        }
+    }
+
+
     // 체크박스 누를 때
     public void updateTodoChecked(String todoText, int is_completed) {
         try {
