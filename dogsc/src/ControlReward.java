@@ -1,10 +1,13 @@
+import javax.swing.*;
 import java.io.*;
 import java.util.Scanner;
 
 // 보상의 반환, 추가, 사용 등 관리 클래스
 public class ControlReward {
-    public int rewardCount;
-    public String rewardPath;
+    private int rewardCount;
+    private String rewardPath;
+    private JOptionPane optionPane;
+    private JFrame frame;
 
     public ControlReward() {
         this.rewardPath = "dog_txt/reward.txt";
@@ -49,5 +52,9 @@ public class ControlReward {
         }catch(IOException e){
             e.printStackTrace();
         }
+    }
+
+    public void showRewardLimitDialog() {
+        optionPane.showMessageDialog(frame, "보상이 부족합니다. \nTodo를 달성하여 보상을 얻어보세요!", "경고", JOptionPane.WARNING_MESSAGE);
     }
 }
