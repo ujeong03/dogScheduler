@@ -74,20 +74,32 @@ public class MainCalendar extends JPanel {
         add(calendarPanel, BorderLayout.CENTER);
     }
 
+    //메서드
+    //초기화를 위한 이번 주 첫 날 가져오기
+    private Date getStartOfWeek(Date startDate) {
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(startDate);
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+
+        return calendar.getTime();
+    }
+
+    //이전주 보여주기
     private void showPreviousWeek() {
-        // 이전 주로 이동
         currentDate = getPreviousWeekStart(currentDate);
         currentStartDate = getPreviousWeekStart(currentStartDate);
         updateCalendar();
     }
 
+    //다음주로 보여주기
     private void showNextWeek() {
-        // 다음 주로 이동
         currentDate = getNextWeekStart(currentDate);
         currentStartDate = getNextWeekStart(currentStartDate);
         updateCalendar();
     }
 
+    //메인페이지 캘린더 보이게 하기
     private void updateCalendar() {
         calendarPanel.removeAll();
 
@@ -110,6 +122,12 @@ public class MainCalendar extends JPanel {
 
             JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
             dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
+
+            if (isToday(date)) {
+                dateLabel.setBackground(Color.PINK); // 오늘 날짜에 PINK로 하이라이트 하기
+                dateLabel.setOpaque(true);
+            }
+
             datePanel.add(dateLabel, BorderLayout.NORTH);
 
             JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
@@ -126,6 +144,12 @@ public class MainCalendar extends JPanel {
 
             JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
             dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
+
+            if (isToday(date)) {
+                dateLabel.setBackground(Color.PINK); // 오늘 날짜에 PINK로 하이라이트 하기
+                dateLabel.setOpaque(true);
+            }
+
             datePanel.add(dateLabel, BorderLayout.NORTH);
 
             JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
@@ -144,13 +168,12 @@ public class MainCalendar extends JPanel {
         List<String> schedules = calendarDB.getSchedulesForDate(date);
         StringBuilder message = new StringBuilder();
         for (String schedule : schedules) {
-            message.append(schedule).append("<br>");
+            message.append("- "+schedule).append("<br>");
         }
-        return "<html>" + message.toString() + "</html>";
+        return "<html>" + message + "</html>";
     }
 
-
-
+    //이번주 날짜 가져오기
     private List<Date> getWeekDates(Date startDate) {
         // 주의 시작일을 기준으로 7일간의 일자를 가져옴
         Calendar calendar = Calendar.getInstance();
@@ -166,9 +189,12 @@ public class MainCalendar extends JPanel {
             current = calendar.getTime();
         }
 
+
         return weekDates;
     }
 
+
+    //이전주 날짜 가져오기
     private Date getPreviousWeekStart(Date startDate) {
         // 이전 주의 시작일을 가져옴
         Calendar calendar = Calendar.getInstance();
@@ -178,6 +204,7 @@ public class MainCalendar extends JPanel {
         return calendar.getTime();
     }
 
+    //다음주 날짜 가져오기
     private Date getNextWeekStart(Date startDate) {
         // 다음 주의 시작일을 가져옴
         Calendar calendar = Calendar.getInstance();
@@ -187,10 +214,14 @@ public class MainCalendar extends JPanel {
         return calendar.getTime();
     }
 
-    private Date getStartOfWeek(Date startDate) {
+
+    //오늘 날짜에 색칠하기 위해서 오늘 날짜인지 판별하는 메서드
+    private boolean isToday(Date date) {
+        Calendar today = Calendar.getInstance();
         Calendar calendar = Calendar.getInstance();
-        calendar.setTime(startDate);
-        calendar.add(Calendar.DAY_OF_WEEK, -6); // Move to the end of the week
-        return calendar.getTime();
+        calendar.setTime(date);
+        return today.get(Calendar.YEAR) == calendar.get(Calendar.YEAR) &&
+                today.get(Calendar.MONTH) == calendar.get(Calendar.MONTH) &&
+                today.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH);
     }
 }
