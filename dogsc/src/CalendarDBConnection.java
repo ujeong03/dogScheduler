@@ -6,7 +6,7 @@ import java.util.List;
 
 public class CalendarDBConnection {
     private Connection connection;
-    String calendarDB = "jdbc:sqlite:src/todoDB.sqlite";
+    String calendarDB = "jdbc:sqlite:src/database.sqlite";
 
     public CalendarDBConnection() {
         initializeDatabaseConnection();
@@ -21,7 +21,7 @@ public class CalendarDBConnection {
 
             // 테이블 생성 SQL 실행
             String createTableSQL = "CREATE TABLE IF NOT EXISTS calendarDB (" +
-                    "id INTEGER PRIMARY KEY AUTOINCREMENT,"+
+                    "id INTEGER,"+
                     "calendardate TEXT, " +
                     "schedule TEXT, " +
                     "reminder INTEGER, " +
@@ -59,7 +59,7 @@ public class CalendarDBConnection {
         try {
             initializeDatabaseConnection();
             String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-            String selectSQL = "SELECT * FROM calendarDB WHERE date = ?";
+            String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
 
             PreparedStatement statement = connection.prepareStatement(selectSQL);
             statement.setString(1, formattedDate);

@@ -1,5 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class MainPage {
     private JPanel calendarPanel;
@@ -8,7 +12,7 @@ public class MainPage {
     private JPanel dogCarePanel;
     private JPanel mainFrame;
 
-    public static void main(String[] args) {
+    public static void main() {
         SwingUtilities.invokeLater(() -> {
             JFrame mainFrame = new JFrame("메인 페이지");
 
@@ -18,23 +22,50 @@ public class MainPage {
 
             JPanel contentPanel = new JPanel(new GridLayout(2, 2));
 
-            JPanel calendarPanel = new JPanel();
-            // 캘린더 컴포넌트들을 calendarPanel에 추가
-            calendarPanel.add(new JLabel("캘린더"));
+            //JPanel calendarPanel = new JPanel();
+
+//            // 캘린더 버튼생성
+//            JButton openCalendarButton = new JButton("CALENDAR");
+//            // 캘린더 버튼 작동
+//            openCalendarButton.addActionListener((new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                   new CalendarWindow();
+//                }
+//            }));
+            //캘린더 패널에 버튼 추가
+          //  calendarPanel.add(openCalendarButton);
+            // 메인캘린더 보이게 하기
+//            calendarPanel.add(new MainCalendar());
+
 
             JPanel reminderPanel = new JPanel();
             // 리마인더 관련 컴포넌트들을 reminderPanel에 추가
             reminderPanel.add(new JLabel("리마인더"));
 
 
-            JPanel dogCarePanel = new JPanel();
-            // 강아지 키우기 관련 컴포넌트들을 dogCarePanel에 추가
-            dogCarePanel.add(new JLabel("강아지 키우기"));
 
-            contentPanel.add(calendarPanel);
+            JPanel dogCarePanel = new JPanel();
+            ImageIcon dogIcon = new ImageIcon("dog_image/dog_big_costume.png");
+            Image scaledImage = dogIcon.getImage().getScaledInstance(300,300,Image.SCALE_SMOOTH);
+            dogIcon = new ImageIcon(scaledImage);
+            JLabel dogLabel = new JLabel(dogIcon);
+            dogCarePanel.add(dogLabel, BorderLayout.CENTER);
+
+
+            dogLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    new DogPage();
+                }
+            });
+
+
+            contentPanel.add(new MainCalendar());
             contentPanel.add(reminderPanel);
             contentPanel.add(new TodoList());
             contentPanel.add(dogCarePanel);
+
 
             mainFrame.add(contentPanel);
 
