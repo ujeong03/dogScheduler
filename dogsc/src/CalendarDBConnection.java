@@ -105,6 +105,12 @@ public class CalendarDBConnection {
             closeConnection();
         }
     }
+
+    public PreparedStatement prepareStatement(String query) throws SQLException {
+        Connection connection = getConnection();
+        return connection.prepareStatement(query);
+    }
+
 }
 
 
