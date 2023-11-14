@@ -1,8 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.*;
 import java.sql.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -17,6 +16,9 @@ public class TodoList extends JPanel {
     private JPanel todoListPanel;
     private Date currentDate;
     private TodoDBConnection todoDBConnection;
+
+    private int prevDayButtonClickCount = 0;
+    private int nextDayButtonClickCount = 0;
 
     public TodoList() {
         //TodoList 클래스의 생성자에서 TodoDBConnection 객체 생성
@@ -37,24 +39,49 @@ public class TodoList extends JPanel {
         prevDayButton = new JButton("←");
         nextDayButton = new JButton("→");
 
-        //전날
+        //전날 3일전까지 이동 가능
         prevDayButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                currentDate = getPreviousDate(currentDate);
-                updateDateLabel();
-                loadTodosFromDatabase();
+                System.out.println("다음날 카운터"+nextDayButtonClickCount+" 전날 카운터"+ prevDayButtonClickCount);
+                if (prevDayButtonClickCount < 3) {
+                    currentDate = getPreviousDate(currentDate);
+                    updateDateLabel();
+                    loadTodosFromDatabase();
+                    prevDayButtonClickCount++;
+                    nextDayButtonClickCount--;
+                }
+                if (prevDayButtonClickCount == 4) {
+                    prevDayButton.setEnabled(false);
+                    currentDate = getPreviousDate(currentDate);
+                    updateDateLabel();
+                    loadTodosFromDatabase();
+                }
+
             }
         });
 
-        //다음날
+        //다음날 3일 후까지 이동 가능
         nextDayButton.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
-                currentDate = getNextDate(currentDate);
-                updateDateLabel();
-                loadTodosFromDatabase();
+                System.out.println("다음날 카운터"+nextDayButtonClickCount+" 전날 카운터"+ prevDayButtonClickCount);
+                if (nextDayButtonClickCount < 3) {
+                    nextDayButton.setEnabled(true);
+                    currentDate = getNextDate(currentDate);
+                    updateDateLabel();
+                    loadTodosFromDatabase();
+                    nextDayButtonClickCount++;
+                    prevDayButtonClickCount--;
+                    System.out.println(nextDayButtonClickCount+ prevDayButtonClickCount);
+                }
+                if (nextDayButtonClickCount == 4) {
+                    nextDayButton.setEnabled(false);
+                    currentDate = getNextDate(currentDate);
+                    updateDateLabel();
+                    loadTodosFromDatabase();
+                }
             }
+
         });
 
         //날짜 이동 패널 만들기
@@ -70,23 +97,24 @@ public class TodoList extends JPanel {
         JPanel inputPanel = new JPanel();
         inputPanel.setPreferredSize(new Dimension(100,50));
         todoTextField = new JTextField(20);
-        addTodoButton = new JButton("추가");
 
-        addTodoButton.addActionListener(new ActionListener() {
+        todoTextField.addKeyListener(new KeyAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                //todoDBConnection.getConnection();
-
-                todoDBConnection.addTodoDB(todoTextField.getText(),currentDate);
-                todoTextField.setText(""); // 입력 필드 비우기
-                //todoDBConnection.closeConnection();
-
-                addTodoItem(todoTextField.getText(), 0);
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    todoDBConnection.getConnection();
+                    todoDBConnection.addTodoDB(todoTextField.getText(),currentDate);
+                    todoTextField.setText(""); // 입력 필드 비우기
+                    addTodoItem(todoTextField.getText(), 0);
+                    todoDBConnection.closeConnection();
+                    loadTodosFromDatabase();
+                }
             }
         });
 
+
+
         inputPanel.add(todoTextField);
-        inputPanel.add(addTodoButton);
         add(inputPanel, BorderLayout.SOUTH);
 
         // 투두 항목 표시 패널
@@ -95,6 +123,7 @@ public class TodoList extends JPanel {
         JScrollPane scrollPane = new JScrollPane(todoListPanel);
         add(scrollPane, BorderLayout.CENTER);
         loadTodosFromDatabase();
+
 
 
     }
@@ -108,11 +137,6 @@ public class TodoList extends JPanel {
         dateLabel.setText(dateFormat.format(currentDate));
     }
 
-    //현재 날짜 가져오는 코드
-    private Date getCurrentDate() {
-        Calendar calendar = Calendar.getInstance();
-        return calendar.getTime();
-    }
 
     //전날의 날짜 정보를 가져오는 메서드
     private Date getPreviousDate(Date date) {
@@ -166,8 +190,11 @@ public class TodoList extends JPanel {
         // 새로운 투두 아이템 패널 생성
         JPanel todoItemPanel = new JPanel();
         JCheckBox checkBox = new JCheckBox();
-        JLabel todoTextLabel = new JLabel(todoText);
+        JTextField todotextField = new JTextField(todoText);
+        JButton deleteButton = new JButton("삭제");
 
+
+        //체크박스 설정
         checkBox.setSelected(isCompleted==1); // 투두 항목의 상태를 설정
 
         checkBox.addActionListener(new ActionListener() {
@@ -181,8 +208,39 @@ public class TodoList extends JPanel {
             }
         });
 
+        //수정하기
+        todotextField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                String modifiedTodoText = todotextField.getText();
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    todoDBConnection.getConnection();
+                    todoDBConnection.modTodoDB(todoText, modifiedTodoText);
+                    todoDBConnection.closeConnection();
+                    loadTodosFromDatabase();
+                }
+            }
+        });
+
+
+
+        //삭제 버튼 설정
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 데이터 베이스에서 투두 지우기
+                todoDBConnection.getConnection();
+                todoDBConnection.delTodoDB(todoText);
+                todoDBConnection.closeConnection();
+
+                // 데이터베이스에서 다시 불러오기
+                loadTodosFromDatabase();
+            }
+        });
+
         todoItemPanel.add(checkBox);
-        todoItemPanel.add(todoTextLabel);
+        todoItemPanel.add(todotextField);
+        todoItemPanel.add(deleteButton);
 
         todoListPanel.add(todoItemPanel);
         todoListPanel.revalidate();
