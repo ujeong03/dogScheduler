@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -108,11 +110,6 @@ public class TodoList extends JPanel {
         dateLabel.setText(dateFormat.format(currentDate));
     }
 
-    //현재 날짜 가져오는 코드
-    private Date getCurrentDate() {
-        Calendar calendar = Calendar.getInstance();
-        return calendar.getTime();
-    }
 
     //전날의 날짜 정보를 가져오는 메서드
     private Date getPreviousDate(Date date) {
@@ -167,7 +164,10 @@ public class TodoList extends JPanel {
         JPanel todoItemPanel = new JPanel();
         JCheckBox checkBox = new JCheckBox();
         JLabel todoTextLabel = new JLabel(todoText);
+        JButton deleteButton = new JButton("삭제");
 
+
+        //체크박스 설정
         checkBox.setSelected(isCompleted==1); // 투두 항목의 상태를 설정
 
         checkBox.addActionListener(new ActionListener() {
@@ -181,8 +181,45 @@ public class TodoList extends JPanel {
             }
         });
 
+        //수정하기
+//        todoTextLabel.addMouseListener(new MouseAdapter() {
+//            @Override
+//            public void mouseClicked(MouseEvent e) {
+//                todoTextLabel.setVisible(false);
+//                editTextField.setText(todoText);
+//                editTextField.setVisible(true);
+//                editTextField.requestFocus();
+//            }
+//        });
+//
+//        editTextField.addActionListener(new ActionListener() {
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                String modTodo = editTextField.getText();
+//                todoDBConnection.getConnection();
+//                todoDBConnection.modTodoDB(todoText, modTodo);
+//                todoDBConnection.closeConnection();
+//                loadTodosFromDatabase();
+//            }
+//        });
+
+        //삭제 버튼 설정
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // 데이터 베이스에서 투두 지우기
+                todoDBConnection.getConnection();
+                todoDBConnection.delTodoDB(todoText);
+                todoDBConnection.closeConnection();
+
+                // 데이터베이스에서 다시 불러오기
+                loadTodosFromDatabase();
+            }
+        });
+
         todoItemPanel.add(checkBox);
         todoItemPanel.add(todoTextLabel);
+        todoItemPanel.add(deleteButton);
 
         todoListPanel.add(todoItemPanel);
         todoListPanel.revalidate();
