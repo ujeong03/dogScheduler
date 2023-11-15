@@ -7,6 +7,10 @@ public class DogLevel {
     private int closeness, level;
     private String dogImagePath;
 
+    /**
+     * DogLevel 클래스의 생성자입니다.
+     * 클래스 초기화 시 파일 경로를 설정하고 현재의 친밀도, 레벨을 읽어옵니다.
+     */
     public DogLevel() {
         this.closenessPath = "dog_txt/closeness.txt";
         this.levelPath = "dog_txt/level.txt";
@@ -15,7 +19,11 @@ public class DogLevel {
         this.dogImagePath = this.growUp(this.getLevel());
     }
 
-    // 파일에서 현재 친밀도 읽고 반환
+    /**
+     * 파일에서 현재 친밀도를 읽어와 반환합니다.
+     *
+     * @return 현재 친밀도
+     */
     public int getCloseness() {
         try {
             File closenessfile = new File(closenessPath);
@@ -32,7 +40,11 @@ public class DogLevel {
         }
     }
 
-    // 파일에서 현재 레벨 읽고 반환
+    /**
+     * 파일에서 현재 레벨을 읽어와 반환합니다.
+     *
+     * @return 현재 레벨
+     */
     public int getLevel() {
         try {
             File levelfile = new File(levelPath);
@@ -49,7 +61,11 @@ public class DogLevel {
         }
     }
 
-    // 친밀도를 상승시키고 파일에 저장
+    /**
+     * 친밀도를 상승시키고 파일에 저장합니다.
+     *
+     * @param num 증가시킬 친밀도의 양
+     */
     public void increaseCloseness(int num) {
         this.closeness += num;
 
@@ -58,14 +74,16 @@ public class DogLevel {
             BufferedWriter bw = new BufferedWriter(closenessFileWriter);
             bw.write(Integer.toString(this.closeness));
             bw.close();
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    // 친밀도 100이상이면 친밀도 -100, 레벨 +1 연산 후 파일에 저장.
+    /**
+     * 친밀도 100 이상이면 친밀도 -100, 레벨 +1 연산 후 파일에 저장합니다.
+     */
     public void increaseLevel() {
-        if(this.closeness >= 100){
+        if (this.closeness >= 100) {
             try {
                 this.closeness -= 100;
 
@@ -74,18 +92,22 @@ public class DogLevel {
                 bw1.write(Integer.toString(this.closeness));
                 bw1.close();
 
-
                 FileWriter levelFileWriter = new FileWriter(levelPath, false);
                 BufferedWriter bw2 = new BufferedWriter(levelFileWriter);
                 bw2.write(Integer.toString(++this.level));
                 bw2.close();
-            }catch(IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    // 특정 레벨에 도달 시 성장한 강아지의 이미지 경로를 반환
+    /**
+     * 특정 레벨에 도달 시 성장한 강아지의 이미지 경로를 반환합니다.
+     *
+     * @param level 성장한 레벨
+     * @return 성장한 강아지의 이미지 경로
+     */
     public String growUp(int level) {
         if (level >= 50) {
             this.dogImagePath = "dog_image/dog_big_costume.png";
