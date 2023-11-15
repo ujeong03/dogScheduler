@@ -173,4 +173,31 @@ public class TodoDBConnection {
             ex.printStackTrace();
         }
     }
+
+    public int getDoneTodoCount(Date currentDate) {
+        int totalCount = 0;
+        try {
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date yesterday = new Date(currentDate.getTime() - (24 * 60 * 60 * 1000));
+            String formattedYesterday = dateFormat.format(yesterday);
+
+            // SQL 쿼리 작성
+            String query = "SELECT SUM(is_completed) FROM todoDB WHERE todoDate = ?";
+            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+                preparedStatement.setString(1, formattedYesterday);
+
+                // 쿼리 실행
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    // 결과 처리
+                    if (resultSet.next()) {
+                        totalCount = resultSet.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return totalCount;
+    }
+
 }

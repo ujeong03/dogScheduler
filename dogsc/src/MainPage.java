@@ -12,7 +12,7 @@ public class MainPage {
     private JPanel dogCarePanel;
     private JPanel mainFrame;
 
-    public static void main() {
+    public MainPage() {
         SwingUtilities.invokeLater(() -> {
             JFrame mainFrame = new JFrame("메인 페이지");
 
@@ -24,9 +24,9 @@ public class MainPage {
 
 
 
-            JPanel reminderPanel = new JPanel();
-            // 리마인더 관련 컴포넌트들을 reminderPanel에 추가
-            reminderPanel.add(new JLabel("리마인더"));
+//            JPanel reminderPanel = new JPanel();
+//            // 리마인더 관련 컴포넌트들을 reminderPanel에 추가
+//            reminderPanel.add(new JLabel("리마인더"));
 
 
 
@@ -47,7 +47,7 @@ public class MainPage {
 
 
             contentPanel.add(new MainCalendar());
-            contentPanel.add(reminderPanel);
+            contentPanel.add(new Reminder());
             contentPanel.add(new TodoList());
             contentPanel.add(dogCarePanel);
 

@@ -8,10 +8,10 @@ import java.io.IOException;
 public class DogPage {
     private JPanel contentPane;
     private JFrame frame;
-    private DogCare dogCare;
     private JButton dogButton, feedButton, soapButton, ballButton;
     private JLabel title, rewardLabel, levelLabel, heart, play, bath, eat;
     private JProgressBar closenessProgressBar;
+    private DogCare dogCare;
     private ControlReward controlReward;
     private DogLevel dogLevel;
 
@@ -94,6 +94,7 @@ public class DogPage {
                 showImagePopup(eat);
                 updateUI(eat);
             } else {
+                // 보상 0개일때 경고창 띄움
                 controlReward.showRewardLimitDialog();
             }
         });
@@ -105,6 +106,7 @@ public class DogPage {
                 showImagePopup(bath);
                 updateUI(bath);
             } else {
+                // 보상 0개일 때 경고창 띄움
                 controlReward.showRewardLimitDialog();
             }
         });
@@ -116,6 +118,7 @@ public class DogPage {
                 showImagePopup(play);
                 updateUI(play);
             } else {
+                // 보상 0개일 때 경고창 띄움
                 controlReward.showRewardLimitDialog();
             }
         });
@@ -127,6 +130,7 @@ public class DogPage {
                 showImagePopup(heart);
                 updateUI(heart);
             } else {
+                // 10번 초과 클릭 시 경고창 띄움
                 dogCare.showTouchLimitDialog();
             }
         });
@@ -184,18 +188,19 @@ public class DogPage {
         play.setVisible(false);
     }
 
+    // 먹이, 비누, 장난감 버튼을 눌렀을 때 해당 이미지 팝업
     private void showImagePopup(JLabel rewardImageLabel) {
-        // Set timer to close the dialog after the specified duration
-        Timer timer = new Timer(1000, e -> rewardImageLabel.setVisible(false));
-        timer.setRepeats(false); // Set to execute only once
+        Timer timer = new Timer(1000, e -> rewardImageLabel.setVisible(false)); // 1초 뒤 이미지 숨김
+        timer.setRepeats(false); // 한 번만 실행
         timer.start();
     }
+
     // 각 버튼 클릭 시 보상, 레벨, 친밀도의 변화 등의 UI 업데이트
-    public void updateUI(JLabel rewardImageLabel) {
+    private void updateUI(JLabel rewardImageLabel) {
         dogButton.setIcon(new ImageIcon(dogLevel.growUp(dogLevel.getLevel())));
         rewardLabel.setText("보상 : " + controlReward.getReward() + "개");
         levelLabel.setText("level " + dogLevel.getLevel());
         closenessProgressBar.setValue(dogLevel.getCloseness());
-        rewardImageLabel.setVisible(true);
+        rewardImageLabel.setVisible(true); // 보상 사용 시 이미지 보이게 함
     }
 }
