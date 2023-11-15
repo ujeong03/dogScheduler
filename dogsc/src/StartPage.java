@@ -3,8 +3,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * 프로그램 시작 시 나타나는 시작 페이지를 나타내는 클래스입니다.
+ */
 public class StartPage extends JFrame {
 
+    /**
+     * StartPage 클래스의 생성자입니다.
+     */
     public StartPage() {
         // 창을 전체 화면으로 설정합니다.
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -13,7 +19,6 @@ public class StartPage extends JFrame {
 
         // 창의 content pane 배경색을 흰색으로 설정합니다.
         getContentPane().setBackground(Color.WHITE);
-
 
         // 레이아웃을 BorderLayout으로 설정합니다. (동, 서, 남, 북, 중앙)
         setLayout(new FlowLayout());
@@ -29,12 +34,11 @@ public class StartPage extends JFrame {
         };
         imageLabel.setLayout(null);
 
-
-// 버튼 패널을 생성하고 버튼들을 추가합니다.
+        // 버튼 패널을 생성하고 버튼들을 추가합니다.
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT)); // 오른쪽 정렬로 버튼을 배치합니다.
 
-// '시작' 버튼을 생성하고 액션 리스너를 추가합니다.
+        // '시작' 버튼을 생성하고 액션 리스너를 추가합니다.
         JButton startButton = new JButton("시작");
         startButton.setBounds(imageIcon.getIconWidth() - 200, 20, 160, 40);
         startButton.setPreferredSize(new Dimension(200, 50)); // 버튼의 크기를 설정합니다.
@@ -43,7 +47,6 @@ public class StartPage extends JFrame {
         startButton.setBorderPainted(false); // 필요에 따라 버튼의 테두리를 제거합니다.
         startButton.setBackground(Color.BLUE);
         startButton.setForeground(Color.WHITE);
-
 
         startButton.addActionListener(new ActionListener() {
             @Override
@@ -54,7 +57,7 @@ public class StartPage extends JFrame {
             }
         });
 
-// '사용자 가이드' 버튼을 생성하고 액션 리스너를 추가합니다.
+        // '사용자 가이드' 버튼을 생성하고 액션 리스너를 추가합니다.
         JButton guideButton = new JButton("사용자 가이드");
         guideButton.setPreferredSize(new Dimension(200, 50)); // 버튼의 크기를 설정합니다.
         guideButton.setOpaque(true);
@@ -62,8 +65,6 @@ public class StartPage extends JFrame {
         guideButton.setBorderPainted(false); // 필요에 따라 버튼의 테두리를 제거합니다.
         guideButton.setBackground(Color.BLUE);
         guideButton.setForeground(Color.WHITE);
-
-
 
         guideButton.addActionListener(new ActionListener() {
             @Override
@@ -73,22 +74,18 @@ public class StartPage extends JFrame {
             }
         });
 
-// 버튼 패널에 버튼들을 추가합니다.
+        // 버튼 패널에 버튼들을 추가합니다.
         buttonPanel.add(startButton);
         buttonPanel.add(guideButton);
 
-// 창에 이미지 레이블과 버튼 패널을 추가합니다.
+        // 창에 이미지 레이블과 버튼 패널을 추가합니다.
         add(imageLabel, BorderLayout.WEST); // 이미지 레이블을 창의 왼쪽에 배치합니다.
 
-// 버튼 패널을 남동쪽에 배치합니다.
-// 패딩을 추가하기 위해 추가적인 패널을 사용합니다.
+        // 버튼 패널을 남동쪽에 배치합니다.
+        // 패딩을 추가하기 위해 추가적인 패널을 사용합니다.
         JPanel bottomPanel = new JPanel(new BorderLayout());
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
         add(bottomPanel, BorderLayout.EAST); // 이 패널을 창의 오른쪽에 배치합니다.
-
-
-
-
 
         // 기본 종료 작업을 설정합니다.
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -96,6 +93,11 @@ public class StartPage extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * 프로그램을 실행하는 메인 메서드입니다.
+     *
+     * @param args 명령행 인수
+     */
     public static void main(String[] args) {
         // Swing 유틸리티를 사용하여 이벤트 디스패치 스레드에서 GUI를 시작합니다.
         SwingUtilities.invokeLater(new Runnable() {
