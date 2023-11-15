@@ -54,7 +54,8 @@ public class ControlReward {
         }
     }
 
+    // 보상이 0개일 때 보상 사용 시 경고창 띄움
     public void showRewardLimitDialog() {
-        optionPane.showMessageDialog(frame, "보상이 부족합니다. \nTodo를 달성하여 보상을 얻어보세요!", "경고", JOptionPane.WARNING_MESSAGE);
+        optionPane.showMessageDialog(frame, "보상이 부족합니다. \nTodo를 달성하여 보상을 얻어보세요!", "안내", JOptionPane.WARNING_MESSAGE);
     }
 }
