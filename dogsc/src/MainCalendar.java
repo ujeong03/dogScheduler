@@ -8,6 +8,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 메인 캘린더를 표시하는 JPanel입니다.
+ */
 public class MainCalendar extends JPanel {
     private Date currentDate;
     private Date currentStartDate;
@@ -17,6 +20,9 @@ public class MainCalendar extends JPanel {
     private JPanel calendarPanel;
     private CalendarDBConnection calendarDB;
 
+    /**
+     * MainCalendar 클래스의 생성자입니다.
+     */
     public MainCalendar() {
         calendarDB = new CalendarDBConnection();
         setLayout(new BorderLayout());
@@ -38,8 +44,6 @@ public class MainCalendar extends JPanel {
                 new CalendarWindow();
             }
         }));
-
-
 
         // 이전 주 버튼
         prevButton = new JButton("<");
@@ -74,7 +78,6 @@ public class MainCalendar extends JPanel {
         add(calendarPanel, BorderLayout.CENTER);
     }
 
-    //메서드
     //초기화를 위한 이번 주 첫 날 가져오기
     private Date getStartOfWeek(Date startDate) {
 
@@ -155,7 +158,6 @@ public class MainCalendar extends JPanel {
             JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
             scheduleLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
             datePanel.add(scheduleLabel, BorderLayout.CENTER);
-
             calendarPanel.add(datePanel);
         }
         // UI 업데이트
@@ -168,7 +170,7 @@ public class MainCalendar extends JPanel {
         List<String> schedules = calendarDB.getSchedulesForDate(date);
         StringBuilder message = new StringBuilder();
         for (String schedule : schedules) {
-            message.append("- "+schedule).append("<br>");
+            message.append("- ").append(schedule).append("<br>");
         }
         return "<html>" + message + "</html>";
     }
@@ -188,11 +190,8 @@ public class MainCalendar extends JPanel {
             calendar.add(Calendar.DAY_OF_MONTH, 1);
             current = calendar.getTime();
         }
-
-
         return weekDates;
     }
-
 
     //이전주 날짜 가져오기
     private Date getPreviousWeekStart(Date startDate) {
@@ -214,7 +213,6 @@ public class MainCalendar extends JPanel {
         return calendar.getTime();
     }
 
-
     //오늘 날짜에 색칠하기 위해서 오늘 날짜인지 판별하는 메서드
     private boolean isToday(Date date) {
         Calendar today = Calendar.getInstance();
@@ -225,3 +223,5 @@ public class MainCalendar extends JPanel {
                 today.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH);
     }
 }
+
+
