@@ -50,7 +50,7 @@ public class StartPage extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 // '시작' 버튼 클릭 시, 메인 페이지로 이동하는 코드를 작성하세요.
                 dispose();
-                MainPage.main();
+                new MainPage();
             }
         });
 
@@ -62,8 +62,6 @@ public class StartPage extends JFrame {
         guideButton.setBorderPainted(false); // 필요에 따라 버튼의 테두리를 제거합니다.
         guideButton.setBackground(Color.BLUE);
         guideButton.setForeground(Color.WHITE);
-
-
 
 
 
