@@ -25,6 +25,7 @@ public class DogPage {
         this.controlReward = new ControlReward();
         this.dogCare = new DogCare();
         this.dogLevel = new DogLevel();
+        dogCare.resetTouchCount();
 
         // 강아지 페이지 frame 생성
         frame = new JFrame("강아지 키우기");
@@ -36,7 +37,7 @@ public class DogPage {
 
         // contentpane 생성
         contentPane = new JPanel();
-        contentPane.setBackground(Color.GREEN);
+        contentPane.setBackground(Color.WHITE);
         contentPane.setBorder(new EmptyBorder(5,5,5,5));
         frame.setContentPane(contentPane);
         contentPane.setLayout(null);
