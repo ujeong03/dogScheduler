@@ -2,11 +2,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.spi.CalendarNameProvider;
 
 /**
  * 메인 캘린더를 표시하는 JPanel입니다.
@@ -16,16 +20,19 @@ public class MainCalendar extends JPanel {
     private Date currentStartDate;
     private JButton prevButton;
     private JButton nextButton;
-    private JButton openCalendarButton;
+    private ImageIcon openCalendarButton;
     private JPanel calendarPanel;
     private CalendarDBConnection calendarDB;
+
 
     /**
      * MainCalendar 클래스의 생성자입니다.
      */
     public MainCalendar() {
-        calendarDB = new CalendarDBConnection();
+
         setLayout(new BorderLayout());
+
+        calendarDB = new CalendarDBConnection();
 
         // 이번주의 첫날과 끝날을 가지고 초기화하기
         Calendar calendar = Calendar.getInstance();
@@ -34,19 +41,24 @@ public class MainCalendar extends JPanel {
 
         //메인 캘린더 버튼 컨트롤러
         JPanel calendarControlPanel = new JPanel();
+        calendarControlPanel.setBorder(BorderFactory.createEmptyBorder(30, 0, 0, 0)); // Add padding around the control panel
 
         // 캘린더 버튼 생성
-        openCalendarButton = new JButton("CALENDAR");
+        openCalendarButton = new ImageIcon("image/Rectangle 1.png");
+        Image scaledImage = openCalendarButton.getImage().getScaledInstance(200,60, Image.SCALE_SMOOTH);
+        openCalendarButton = new ImageIcon(scaledImage);
+        JLabel openCalendarLabel = new JLabel(openCalendarButton);
         // 캘린더 버튼 작동
-        openCalendarButton.addActionListener((new ActionListener() {
+        openCalendarLabel.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 new CalendarWindow();
             }
-        }));
+        });
+
 
         // 이전 주 버튼
-        prevButton = new JButton("<");
+        prevButton = new RoundButton("<");
         prevButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -55,7 +67,7 @@ public class MainCalendar extends JPanel {
         });
 
         // 다음 주 버튼
-        nextButton = new JButton(">");
+        nextButton = new RoundButton(">");
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -64,19 +76,44 @@ public class MainCalendar extends JPanel {
         });
 
         calendarControlPanel.add(prevButton);
-        calendarControlPanel.add(openCalendarButton);
+        calendarControlPanel.add(openCalendarLabel);
         calendarControlPanel.add(nextButton);
+
+        //요일
+        JPanel dayOfWeekPanel = new JPanel();
+        dayOfWeekPanel.setBackground(Color.WHITE);
+        ImageIcon dayOfWeek = new ImageIcon("image/dayofweek.png");
+        Image scaledDayOfWeekImage = dayOfWeek.getImage().getScaledInstance(800,50,Image.SCALE_SMOOTH);
+        dayOfWeek = new ImageIcon(scaledDayOfWeekImage);
+        JLabel dayOfWeekLabel = new JLabel(dayOfWeek);
+        dayOfWeekPanel.add(dayOfWeekLabel);
+
+        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel.setBackground(Color.WHITE); // Set background color
+        topPanel.add(calendarControlPanel, BorderLayout.NORTH);
+        topPanel.add(dayOfWeekPanel, BorderLayout.CENTER);
+
 
         // 캘린더 패널
         calendarPanel = new JPanel();
-        calendarPanel.setLayout(new GridLayout(3, 7)); // 7일씩 나열
+        calendarPanel.setOpaque(false);
+        calendarPanel.setLayout(new GridLayout(2, 7));
+        calendarPanel.setBounds(100, 200, 400, 500);
+        add(calendarPanel, BorderLayout.CENTER);
+
 
         updateCalendar(); // 캘린더 업데이트
 
         // 버튼과 캘린더 패널을 프레임에 추가
-        add(calendarControlPanel, BorderLayout.NORTH);
+        setBackground(Color.WHITE);
+        calendarControlPanel.setBackground(Color.WHITE);
+        calendarPanel.setBackground(Color.WHITE);
+        add(topPanel, BorderLayout.NORTH);
         add(calendarPanel, BorderLayout.CENTER);
+
     }
+
+
 
     //초기화를 위한 이번 주 첫 날 가져오기
     private Date getStartOfWeek(Date startDate) {
@@ -106,23 +143,12 @@ public class MainCalendar extends JPanel {
     private void updateCalendar() {
         calendarPanel.removeAll();
 
-        // 요일 표시
-        String[] daysOfWeek = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-        for (String day : daysOfWeek) {
-            JLabel dayLabel = new JLabel(day, JLabel.CENTER);
-            if ("Sun".equals(day)){
-                dayLabel.setForeground(Color.RED);
-            } else if ("Sat".equals(day)) {
-                dayLabel.setForeground(Color.BLUE);
-            }
-            calendarPanel.add(dayLabel);
-        }
-
         // 현재 주 표시
         List<Date> weekDates = getWeekDates(currentDate);
         for (Date date : weekDates) {
             JPanel datePanel = new JPanel(new BorderLayout());
 
+            datePanel.setBackground(Color.WHITE);
             JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
             dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
 
@@ -145,6 +171,7 @@ public class MainCalendar extends JPanel {
         for (Date date : nextWeekDates) {
             JPanel datePanel = new JPanel(new BorderLayout());
 
+            datePanel.setBackground(Color.WHITE);
             JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
             dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
 

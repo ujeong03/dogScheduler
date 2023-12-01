@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.plaf.BorderUIResource;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -8,8 +9,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
 import java.util.List;
 
@@ -21,19 +21,33 @@ public class Reminder extends JPanel {
     private JPanel reminderPanel;
     private List<ReminderItem> reminderItems;
 
+    Font reminderfont = new Font("배달의민족 주아",Font.BOLD,20);
+    ImageIcon reminderBGIcon = new ImageIcon("image/reminderBG.png");
+    Image reminderBG = reminderBGIcon.getImage();
+
+    class ReminderBG extends JPanel{
+        public void paintComponent(Graphics g){
+            super.paintComponent(g);
+            g.drawImage(reminderBG,0,0,getWidth(),getHeight(),this);
+            setBackground(Color.WHITE);
+
+        }
+    }
+
     /**
      * Reminder 클래스의 생성자입니다.
      */
     public Reminder() {
-        reminderPanel = new JPanel();
+        reminderPanel = new ReminderBG();
         reminderItems = new ArrayList<>();
 
         JScrollPane scrollPane = new JScrollPane(reminderPanel);
         setLayout(new BorderLayout());
+        scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
 
         reminderPanel.setLayout(new BoxLayout(reminderPanel, BoxLayout.Y_AXIS));
-
+        reminderPanel.setBorder(BorderFactory.createEmptyBorder(40,0,0,0));
         loadRemindersFromDatabase();
     }
 
@@ -50,7 +64,7 @@ public class Reminder extends JPanel {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String formattedCurrentDate = dateFormat.format(currentDate);
 
-            String query = "SELECT * FROM calendardb WHERE (reminder = 1 OR homework = 1) AND calendardate >= ?";
+            String query = "SELECT * FROM calendardb WHERE (reminder = 1 OR homework = 1) AND calendardate >= ? ORDER BY calendardate ASC";
             PreparedStatement preparedStatement = calendarDBConnection.prepareStatement(query);
             preparedStatement.setString(1, formattedCurrentDate);
 
@@ -86,6 +100,7 @@ public class Reminder extends JPanel {
      * @param reminderItem 추가할 ReminderItem 객체
      */
     private void addReminderItem(ReminderItem reminderItem) {
+        reminderPanel.setFont(reminderfont);
         reminderPanel.add(reminderItem);
         reminderPanel.revalidate();
         reminderPanel.repaint();
@@ -136,31 +151,28 @@ public class Reminder extends JPanel {
          */
         ReminderItem(String eventTitle, long daysRemaining, int homework) {
             this.eventTitle = eventTitle;
-            setLayout(new FlowLayout(FlowLayout.LEFT));
-            titleLabel = new JLabel(eventTitle);
-            daysRemainingLabel = new JLabel("D - " + daysRemaining);
-            add(daysRemainingLabel);
+
+            titleLabel = new JLabel(eventTitle+"\n");
+            if (daysRemaining != 0) {daysRemainingLabel = new JLabel("D - " + daysRemaining);}
+            else {daysRemainingLabel = new JLabel("D - Day");}
+
+            titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            daysRemainingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            titleLabel.setFont(reminderfont);
+            daysRemainingLabel.setFont(reminderfont);
 
             // 과제는 다른 색으로 표시
             if (homework == 1) {
-                titleLabel.setForeground(Color.RED);
+                Color homeworkCR = new Color(233,75,72);
+                titleLabel.setForeground(homeworkCR);
             } else {
                 titleLabel.setForeground(Color.BLACK);
             }
+            add(daysRemainingLabel,BorderLayout.WEST); // 남은 일 수를 서쪽(왼쪽)에 배치
+            add(titleLabel, BorderLayout.CENTER);
+            setOpaque(false);
 
-            add(titleLabel);
-            setOpaque(true);
-            setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        }
-
-        /**
-         * 남은 일 수를 업데이트하는 메서드입니다.
-         *
-         * @param daysRemaining 업데이트할 남은 일 수
-         */
-        public void updateDaysRemaining(long daysRemaining) {
-            daysRemainingLabel.setText("D - " + daysRemaining);
         }
     }
 }
