@@ -14,11 +14,13 @@ public class TodoList extends JPanel {
 
     // GUI 구성 요소
     private JLabel dateLabel;
-    private JButton prevDayButton;
-    private JButton nextDayButton;
+    private RoundButton prevDayButton;
+    private RoundButton nextDayButton;
     private JTextField todoTextField;
-    private JButton addTodoButton;
-    private JPanel todoListPanel;
+    private TodoListBG todoListPanel;
+    private RoundButton rewardButton;
+    Font datefont = new Font("배달의민족 주아",Font.BOLD,15);
+    Font todofont = new Font("배달의민족 주아",Font.BOLD,17);
 
     // 날짜 관련 필드
     private Date currentDate;
@@ -27,6 +29,18 @@ public class TodoList extends JPanel {
     // 버튼 클릭 횟수
     private int prevDayButtonClickCount = 0;
     private int nextDayButtonClickCount = 0;
+
+
+    //투두 패널 배경
+    private ImageIcon todoBGIcon = new ImageIcon("image/todolistBG.png");
+    private Image todoBG = todoBGIcon.getImage();
+    class TodoListBG extends JPanel {
+        public void paintComponent(Graphics g){
+            super.paintComponent(g);
+            g.drawImage(todoBG,0,0,getWidth(),getHeight(),this);
+
+        }
+    }
 
     /**
      * TodoList 객체를 생성합니다.
@@ -40,13 +54,14 @@ public class TodoList extends JPanel {
 
         // 날짜 표시 레이블
         dateLabel = new JLabel();
+        dateLabel.setFont(datefont);
         updateDateLabel();
         add(dateLabel, BorderLayout.NORTH);
 
         // 날짜 변경 버튼
         JPanel dateControlPanel = new JPanel();
-        prevDayButton = new JButton("←");
-        nextDayButton = new JButton("→");
+        prevDayButton = new RoundButton("←");
+        nextDayButton = new RoundButton("→");
 
         prevDayButton.addActionListener(new ActionListener() {
             @Override
@@ -91,13 +106,17 @@ public class TodoList extends JPanel {
         dateControlPanel.add(prevDayButton);
         dateControlPanel.add(dateLabel);
         dateControlPanel.add(nextDayButton);
+        dateControlPanel.setBackground(Color.WHITE);
+        dateControlPanel.setBorder(BorderFactory.createEmptyBorder(10,0,4,0));
+
 
         add(dateControlPanel, BorderLayout.NORTH);
 
         // 투두 입력 필드와 추가 버튼
-        JPanel inputPanel = new JPanel();
+        JPanel inputPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 110, 5));
         inputPanel.setPreferredSize(new Dimension(100, 50));
         todoTextField = new JTextField(20);
+        rewardButton = new RoundButton("보상받기");
 
         todoTextField.addKeyListener(new KeyAdapter() {
             @Override
@@ -113,14 +132,28 @@ public class TodoList extends JPanel {
                 }
             }
         });
+        rewardButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int n = todoDBConnection.getDoneTodoCount(currentDate);
+               //ControlReward.addReward(n);
+            }
+        });
 
         inputPanel.add(todoTextField);
+        inputPanel.add(rewardButton);
+        Color textFieldColor = new Color(237, 232, 224);
+        inputPanel.setBackground(textFieldColor);
         add(inputPanel, BorderLayout.SOUTH);
 
         // 투두 항목 표시 패널
-        todoListPanel = new JPanel();
+        todoListPanel = new TodoListBG();
         todoListPanel.setLayout(new BoxLayout(todoListPanel, BoxLayout.Y_AXIS));
+
+
         JScrollPane scrollPane = new JScrollPane(todoListPanel);
+        scrollPane.setBorder(null);
+
         add(scrollPane, BorderLayout.CENTER);
         loadTodosFromDatabase();
     }
@@ -169,8 +202,6 @@ public class TodoList extends JPanel {
             // 현재 날짜에 해당하는 투두 가져오기
             List<String> todos = todoDBConnection.getTodosForDate(currentDate);
 
-            // 디버깅 출력문
-            System.out.println("데이터베이스에서 가져온 Todos: " + todos);
 
             // 기존의 투두 항목을 모두 제거
             todoListPanel.removeAll();
@@ -201,7 +232,10 @@ public class TodoList extends JPanel {
         JPanel todoItemPanel = new JPanel();
         JCheckBox checkBox = new JCheckBox();
         JTextField todotextField = new JTextField(todoText);
-        JButton deleteButton = new JButton("삭제");
+        JButton deleteButton = new RoundButton("삭제");
+
+        todotextField.setFont(todofont);
+        deleteButton.setFont(todofont);
 
         // 체크박스 설정
         checkBox.setSelected(isCompleted == 1);
@@ -248,6 +282,8 @@ public class TodoList extends JPanel {
         todoItemPanel.add(checkBox);
         todoItemPanel.add(todotextField);
         todoItemPanel.add(deleteButton);
+        todoItemPanel.setOpaque(false);
+
 
         todoListPanel.add(todoItemPanel);
         todoListPanel.revalidate();

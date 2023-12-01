@@ -1,7 +1,9 @@
 import java.io.*;
 import java.util.Scanner;
 
-// 강아지의 친밀도, 레벨을 반환하거나 상승시키며, 강아지를 성장시키는 강아지 레벨 클래스
+/**
+ * 강아지의 친밀도, 레벨을 반환하거나 상승시키며, 강아지를 성장시키는 강아지 레벨 클래스
+ */
 public class DogLevel {
     private String closenessPath, levelPath;
     private int closeness, level;

@@ -31,6 +31,7 @@ public class TodoDBConnection {
 
                 // 테이블 생성 SQL 실행
                 String createTableSQL = "CREATE TABLE IF NOT EXISTS todoDB (" +
+                        "order_index INTEGER PRIMARY KEY, "+
                         "todoDate TEXT, " +
                         "todoText TEXT, " +
                         "is_completed INTEGER)";
@@ -162,7 +163,7 @@ public class TodoDBConnection {
         try {
             initializeDatabaseConnection();
             String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-            String selectSQL = "SELECT * FROM todoDB WHERE todoDate = ?";
+            String selectSQL = "SELECT * FROM todoDB WHERE todoDate = ? ORDER BY order_index ASC";
 
             try (PreparedStatement statement = connection.prepareStatement(selectSQL)) {
                 statement.setString(1, formattedDate);
@@ -219,6 +220,9 @@ public class TodoDBConnection {
             ex.printStackTrace();
         }
     }
+
+
+
 
     /**
      * 특정 날짜의 완료된 투두의 수를 가져옵니다.
