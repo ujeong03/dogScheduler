@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.plaf.BorderUIResource;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
@@ -8,29 +9,51 @@ import java.io.IOException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 일정 알림을 표시하는 패널입니다.
+ */
 public class Reminder extends JPanel {
 
     private JPanel reminderPanel;
     private List<ReminderItem> reminderItems;
 
+    Font reminderfont = new Font("배달의민족 주아",Font.BOLD,20);
+    ImageIcon reminderBGIcon = new ImageIcon("image/reminderBG.png");
+    Image reminderBG = reminderBGIcon.getImage();
+
+    class ReminderBG extends JPanel{
+        public void paintComponent(Graphics g){
+            super.paintComponent(g);
+            g.drawImage(reminderBG,0,0,getWidth(),getHeight(),this);
+            setBackground(Color.WHITE);
+
+        }
+    }
+
+    /**
+     * Reminder 클래스의 생성자입니다.
+     */
     public Reminder() {
-        reminderPanel = new JPanel();
+        reminderPanel = new ReminderBG();
         reminderItems = new ArrayList<>();
 
         JScrollPane scrollPane = new JScrollPane(reminderPanel);
         setLayout(new BorderLayout());
+        scrollPane.setBorder(null);
         add(scrollPane, BorderLayout.CENTER);
 
         reminderPanel.setLayout(new BoxLayout(reminderPanel, BoxLayout.Y_AXIS));
-
+        reminderPanel.setBorder(BorderFactory.createEmptyBorder(40,0,0,0));
         loadRemindersFromDatabase();
     }
 
+    /**
+     * 데이터베이스에서 일정을 로드하여 표시하는 메서드입니다.
+     */
     private void loadRemindersFromDatabase() {
         try {
             CalendarDBConnection calendarDBConnection = new CalendarDBConnection();
@@ -41,7 +64,7 @@ public class Reminder extends JPanel {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             String formattedCurrentDate = dateFormat.format(currentDate);
 
-            String query = "SELECT * FROM calendardb WHERE (reminder = 1 OR homework = 1) AND calendardate >= ?";
+            String query = "SELECT * FROM calendardb WHERE (reminder = 1 OR homework = 1) AND calendardate >= ? ORDER BY calendardate ASC";
             PreparedStatement preparedStatement = calendarDBConnection.prepareStatement(query);
             preparedStatement.setString(1, formattedCurrentDate);
 
@@ -71,13 +94,25 @@ public class Reminder extends JPanel {
         }
     }
 
+    /**
+     * ReminderItem을 패널에 추가하는 메서드입니다.
+     *
+     * @param reminderItem 추가할 ReminderItem 객체
+     */
     private void addReminderItem(ReminderItem reminderItem) {
+        reminderPanel.setFont(reminderfont);
         reminderPanel.add(reminderItem);
         reminderPanel.revalidate();
         reminderPanel.repaint();
     }
 
-    //남은날짜 계산하기
+    /**
+     * 두 날짜 사이의 일 수를 계산하는 메서드입니다.
+     *
+     * @param currentDate 현재 날짜
+     * @param eventDate    이벤트 날짜
+     * @return 두 날짜 사이의 일 수
+     */
     public static long daysBetween(Date currentDate, Date eventDate) {
         Calendar currentCal = Calendar.getInstance();
         currentCal.setTime(currentDate);
@@ -99,105 +134,45 @@ public class Reminder extends JPanel {
         return difference / (24 * 60 * 60 * 1000);
     }
 
-
-    //리마인더 표시하기
+    /**
+     * 일정 알림 항목을 표시하는 내부 클래스입니다.
+     */
     private class ReminderItem extends JPanel {
         private JLabel titleLabel;
         private JLabel daysRemainingLabel;
         private String eventTitle;
 
+        /**
+         * ReminderItem 클래스의 생성자입니다.
+         *
+         * @param eventTitle     일정 제목
+         * @param daysRemaining  남은 일 수
+         * @param homework       과제 여부
+         */
         ReminderItem(String eventTitle, long daysRemaining, int homework) {
             this.eventTitle = eventTitle;
-            setLayout(new FlowLayout(FlowLayout.LEFT));
-            titleLabel = new JLabel(eventTitle);
-            daysRemainingLabel = new JLabel("D - " + daysRemaining);
-            add(daysRemainingLabel);
-            add(titleLabel);
 
-            // 과제는 다른 색으로 칠하기
+            titleLabel = new JLabel(eventTitle+"\n");
+            if (daysRemaining != 0) {daysRemainingLabel = new JLabel("D - " + daysRemaining);}
+            else {daysRemainingLabel = new JLabel("D - Day");}
+
+            titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            daysRemainingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+            titleLabel.setFont(reminderfont);
+            daysRemainingLabel.setFont(reminderfont);
+
+            // 과제는 다른 색으로 표시
             if (homework == 1) {
-                titleLabel.setForeground(Color.RED); // Change the color to your desired color
+                Color homeworkCR = new Color(233,75,72);
+                titleLabel.setForeground(homeworkCR);
             } else {
-                titleLabel.setForeground(Color.BLACK); // Default color for other items
+                titleLabel.setForeground(Color.BLACK);
             }
+            add(daysRemainingLabel,BorderLayout.WEST); // 남은 일 수를 서쪽(왼쪽)에 배치
+            add(titleLabel, BorderLayout.CENTER);
+            setOpaque(false);
 
-            add(daysRemainingLabel);
-            add(titleLabel);
-
-
-            setOpaque(true);
-            setBackground(Color.WHITE);
-            setBorder(BorderFactory.createLineBorder(Color.BLACK));
-//            setTransferHandler(new ReminderTransferHandler());
-//            addMouseListener(new MouseAdapter() {
-//                @Override
-//                public void mousePressed(MouseEvent e) {
-//                    JComponent comp = (JComponent) e.getSource();
-//                    TransferHandler handler = comp.getTransferHandler();
-//                    handler.exportAsDrag(comp, e, TransferHandler.MOVE);
-//                }
-//            });
-        }
-
-        public void updateDaysRemaining(long daysRemaining) {
-            daysRemainingLabel.setText("D - " + daysRemaining);
         }
     }
-
-
-
-    // Create a custom TransferHandler for the drag-and-drop functionality
-//    private class ReminderTransferHandler extends TransferHandler {
-//        private int sourceIndex;
-//        @Override
-//        public int getSourceActions(JComponent c) {
-//            return TransferHandler.MOVE;
-//        }
-//
-//        @Override
-//        protected Transferable createTransferable(JComponent c) {
-//            if (c instanceof ReminderItem) {
-//                ReminderItem reminderItem = (ReminderItem) c;
-//                //드래그한 reminderItem 인덱스 가져오기
-//                sourceIndex = reminderItems.indexOf(reminderItem);
-//                return new StringSelection(reminderItem.eventTitle);
-//            }
-//            return null;
-//        }
-//
-//        @Override
-//        protected void exportDone(JComponent source, Transferable data, int action) {
-//            if (action == TransferHandler.MOVE && source instanceof ReminderItem) {
-//                ReminderItem reminderItem = (ReminderItem) source;
-//                //드래그한 아이템을 제거하고 UI를 업데이트하는 처리, 예를 들어 리스트에서 제거하고 UI를 업데이트함
-//                reminderItems.remove(reminderItem);
-//                reminderPanel.remove(reminderItem);
-//                reminderPanel.revalidate();
-//                reminderPanel.repaint();
-//
-//                // 이제 드롭 작업을 처리합니다.
-//                if (data.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-//                    Transferable transferable = new StringSelection(reminderItem.eventTitle);
-//                    TransferHandler.TransferSupport support = new TransferHandler.TransferSupport(source, transferable);
-//
-//                    if (support.isDrop()) {
-//                        // 드롭 위치 정보 가져오기
-//                        Point dropPoint = support.getDropLocation().getDropPoint();
-//
-//                        // 좌표를 패널의 기준으로 변환
-//                        SwingUtilities.convertPointFromScreen(dropPoint, reminderPanel);
-//
-//                        // 드롭 위치에 해당하는 인덱스 계산
-//                        int targetIndex = reminderPanel.getComponentAt(dropPoint).getY() / reminderItem.getHeight();
-//
-//                        // targetIndex가 유효한 범위 내에 있는지 확인
-//                        if (targetIndex >= 0 && targetIndex <= reminderItems.size()) {
-//                            // 새 위치에 드래그된 항목을 삽입
-//                            reminderItems.add(targetIndex, reminderItem);
-//                            reminderPanel.add(reminderItem, targetIndex);
-//                            reminderPanel.revalidate();
-//                            reminderPanel.repaint();
-//                        }
-//                }
-//            }
-        }
+}

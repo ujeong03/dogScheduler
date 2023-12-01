@@ -4,7 +4,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 
-// 강아지 키우기 페이지 메인 클래스
+/**
+ * 강아지 키우기 페이지의 메인 클래스입니다.
+ */
 public class DogPage {
     private JPanel contentPane;
     private JFrame frame;
@@ -15,10 +17,15 @@ public class DogPage {
     private ControlReward controlReward;
     private DogLevel dogLevel;
 
+    /**
+     * DogPage 클래스의 생성자입니다.
+     * 강아지 키우기 페이지의 UI를 초기화하고 보여줍니다.
+     */
     public DogPage() {
         this.controlReward = new ControlReward();
         this.dogCare = new DogCare();
         this.dogLevel = new DogLevel();
+        dogCare.resetTouchCount();
 
         // 강아지 페이지 frame 생성
         frame = new JFrame("강아지 키우기");
@@ -30,7 +37,7 @@ public class DogPage {
 
         // contentpane 생성
         contentPane = new JPanel();
-        contentPane.setBackground(Color.GREEN);
+        contentPane.setBackground(Color.WHITE);
         contentPane.setBorder(new EmptyBorder(5,5,5,5));
         frame.setContentPane(contentPane);
         contentPane.setLayout(null);
@@ -43,7 +50,6 @@ public class DogPage {
         dogButton = new JButton(new ImageIcon(dogLevel.growUp(dogLevel.getLevel())));
         dogButton.setContentAreaFilled(false);
         dogButton.setBorderPainted(false);
-
 
         // 보상 라벨 생성
         rewardLabel = new JLabel("보상 : " + controlReward.getReward() + "개");
@@ -85,7 +91,6 @@ public class DogPage {
 
         // 놀기 이미지 라벨 생성
         play = new JLabel(new ImageIcon("dog_image/play.png"));
-
 
         // 먹이 버튼 클릭 시 이벤트 발생
         feedButton.addActionListener((ActionEvent e) -> {
@@ -204,3 +209,4 @@ public class DogPage {
         rewardImageLabel.setVisible(true); // 보상 사용 시 이미지 보이게 함
     }
 }
+

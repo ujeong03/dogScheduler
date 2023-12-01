@@ -4,15 +4,23 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * TodoList 어플리케이션의 데이터베이스 연동을 담당하는 클래스입니다.
+ */
 public class TodoDBConnection {
     private Connection connection;
     private String todoDB = "jdbc:sqlite:src/database.sqlite";
 
-    // 데이터베이스 연결 초기화
+    /**
+     * 데이터베이스 연결을 초기화합니다.
+     */
     public TodoDBConnection() {
         initializeDatabaseConnection();
     }
 
+    /**
+     * 데이터베이스 연결을 초기화합니다.
+     */
     private void initializeDatabaseConnection() {
         try {
             if (connection == null || connection.isClosed()) {
@@ -23,6 +31,7 @@ public class TodoDBConnection {
 
                 // 테이블 생성 SQL 실행
                 String createTableSQL = "CREATE TABLE IF NOT EXISTS todoDB (" +
+                        "order_index INTEGER PRIMARY KEY, "+
                         "todoDate TEXT, " +
                         "todoText TEXT, " +
                         "is_completed INTEGER)";
@@ -37,12 +46,18 @@ public class TodoDBConnection {
         }
     }
 
-    // DB 연결
+    /**
+     * 데이터베이스 연결을 반환합니다.
+     *
+     * @return 데이터베이스 연결 객체
+     */
     public Connection getConnection() {
         return connection;
     }
 
-    // 데이터베이스 연결 닫기
+    /**
+     * 데이터베이스 연결을 닫습니다.
+     */
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
@@ -54,7 +69,12 @@ public class TodoDBConnection {
         }
     }
 
-    // 투두 추가
+    /**
+     * 새로운 투두를 데이터베이스에 추가합니다.
+     *
+     * @param todoText 추가할 투두의 텍스트
+     * @param todoDate 투두의 날짜
+     */
     public void addTodoDB(String todoText, Date todoDate) {
         try {
             initializeDatabaseConnection();
@@ -71,7 +91,12 @@ public class TodoDBConnection {
         }
     }
 
-    //투두 수정
+    /**
+     * 투두를 수정합니다.
+     *
+     * @param oldText 수정 전 투두의 텍스트
+     * @param newText 수정 후 투두의 텍스트
+     */
     public void modTodoDB(String oldText, String newText) {
         try {
             initializeDatabaseConnection();
@@ -87,7 +112,11 @@ public class TodoDBConnection {
         }
     }
 
-    //투두 삭제
+    /**
+     * 투두를 삭제합니다.
+     *
+     * @param todoText 삭제할 투두의 텍스트
+     */
     public void delTodoDB(String todoText) {
         try {
             initializeDatabaseConnection();
@@ -102,8 +131,12 @@ public class TodoDBConnection {
         }
     }
 
-
-    // 체크박스 누를 때
+    /**
+     * 투두의 체크박스 상태를 업데이트합니다.
+     *
+     * @param todoText     업데이트할 투두의 텍스트
+     * @param is_completed 체크박스 상태 (1: 체크, 0: 언체크)
+     */
     public void updateTodoChecked(String todoText, int is_completed) {
         try {
             initializeDatabaseConnection();
@@ -119,13 +152,18 @@ public class TodoDBConnection {
         }
     }
 
-    // 해당 날짜의 투두 가져오기
+    /**
+     * 특정 날짜의 투두 리스트를 가져옵니다.
+     *
+     * @param date 가져올 투두의 날짜
+     * @return 해당 날짜의 투두 리스트
+     */
     public List<String> getTodosForDate(Date date) {
         List<String> todos = new ArrayList<>();
         try {
             initializeDatabaseConnection();
             String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-            String selectSQL = "SELECT * FROM todoDB WHERE todoDate = ?";
+            String selectSQL = "SELECT * FROM todoDB WHERE todoDate = ? ORDER BY order_index ASC";
 
             try (PreparedStatement statement = connection.prepareStatement(selectSQL)) {
                 statement.setString(1, formattedDate);
@@ -142,7 +180,12 @@ public class TodoDBConnection {
         return todos;
     }
 
-    // 체크박스 상태
+    /**
+     * 투두의 체크박스 상태를 가져옵니다.
+     *
+     * @param todo 투두의 텍스트
+     * @return 체크박스 상태 (1: 체크, 0: 언체크)
+     */
     public int getTodoCompletedStatus(String todo) {
         int isCompleted = 0;
         try {
@@ -163,7 +206,11 @@ public class TodoDBConnection {
         return isCompleted;
     }
 
-    // SQLException을 처리하는 메서드
+    /**
+     * SQLException을 처리하는 메서드입니다.
+     *
+     * @param e SQLException 객체
+     */
     private void handleSQLException(SQLException e) {
         e.printStackTrace();
         System.out.println("Todo 데이터베이스 작업 중 오류 발생");
@@ -174,6 +221,15 @@ public class TodoDBConnection {
         }
     }
 
+
+
+
+    /**
+     * 특정 날짜의 완료된 투두의 수를 가져옵니다.
+     *
+     * @param currentDate 기준이 되는 날짜
+     * @return 완료된 투두의 수
+     */
     public int getDoneTodoCount(Date currentDate) {
         int totalCount = 0;
         try {
@@ -199,5 +255,5 @@ public class TodoDBConnection {
         }
         return totalCount;
     }
-
 }
+

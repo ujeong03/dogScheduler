@@ -6,6 +6,9 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * DateDetailDialog 클래스는 특정 날짜의 일정을 상세하게 보여주는 다이얼로그입니다.
+ */
 public class DateDetailDialog extends JDialog {
     private JLabel dateLabel;
     private JPanel schedulesPanel;
@@ -17,6 +20,15 @@ public class DateDetailDialog extends JDialog {
     private int day;
     private JButton dayButton;
 
+    /**
+     * DateDetailDialog 클래스의 생성자입니다.
+     *
+     * @param parent     부모 프레임
+     * @param title      다이얼로그 타이틀
+     * @param modal      모달 여부
+     * @param day        날짜
+     * @param dayButton  날짜를 나타내는 버튼
+     */
 
     public DateDetailDialog(JFrame parent, String title, boolean modal, int day, JButton dayButton) {
         super(parent, title, modal);
@@ -136,7 +148,11 @@ public class DateDetailDialog extends JDialog {
     }
 
 
-
+    /**
+     * 일정 패널을 제거하고 화면을 업데이트합니다.
+     *
+     * @param schedulePanel 제거할 일정 패널
+     */
     public void removeSchedulePanel(SchedulePanel schedulePanel) {
         schedulePanels.remove(schedulePanel);
         schedulesPanel.remove(schedulePanel);
@@ -148,6 +164,9 @@ public class DateDetailDialog extends JDialog {
         });
     }
 
+    /**
+     * 캘린더 버튼 텍스트를 업데이트합니다.
+     */
     private void updateCalendarButtonText() {
         StringBuilder buttonText = new StringBuilder("일정\n");
         for (SchedulePanel schedulePanel : schedulePanels) {
@@ -156,6 +175,9 @@ public class DateDetailDialog extends JDialog {
         //calendarButton.setText(buttonText.toString());
     }
 
+    /**
+     * 일정을 나타내는 패널 클래스입니다.
+     */
     private class SchedulePanel extends JPanel {
         private JTextField titleField;
         private JCheckBox reminderCheckBox;
