@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -100,7 +101,7 @@ public class DateDetailDialog extends JDialog {
 
 
     private void saveSchedules() throws ClassNotFoundException {
-        String url = "jdbc:sqlite:src/todoDB.sqlite";
+        String url = "jdbc:sqlite:src/database.sqlite";
         Class.forName("org.sqlite.JDBC");
         createTableIfNotExists();
         try (Connection conn = DriverManager.getConnection(url)) {
@@ -108,12 +109,12 @@ public class DateDetailDialog extends JDialog {
                 String title = schedulePanel.getTitle();
                 boolean isReminder = schedulePanel.isReminderSelected();
                 boolean isHomework = schedulePanel.isHomeworkSelected();
-
-                String sql = "INSERT INTO schedules (title, isReminder, isHomework) VALUES (?, ?, ?)";
+                LocalDate date =  LocalDate.now();
+                String sql = "INSERT INTO schedules (title,isReminder, isHomework) VALUES (?, ?, ?)";
                 try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                     pstmt.setString(1, title);
-                    pstmt.setBoolean(2, isReminder);
-                    pstmt.setBoolean(3, isHomework);
+                    pstmt.setBoolean(3, isReminder);
+                    pstmt.setBoolean(4, isHomework);
                     pstmt.executeUpdate();
                 }
             }
@@ -131,8 +132,7 @@ public class DateDetailDialog extends JDialog {
     }
 
     private void createTableIfNotExists() {
-        String url = "jdbc:sqlite:src/todoDB.sqlite";
-
+        String url = "jdbc:sqlite:src/database.sqlite";
         String sql = "CREATE TABLE IF NOT EXISTS schedules ("
                 + "id INTEGER PRIMARY KEY,"
                 + "title TEXT NOT NULL,"
@@ -218,3 +218,4 @@ public class DateDetailDialog extends JDialog {
         }
     }
 }
+
