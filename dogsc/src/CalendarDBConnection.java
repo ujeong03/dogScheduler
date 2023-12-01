@@ -3,13 +3,16 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * CalendarDBConnection 클래스는 SQLite 데이터베이스와의 연결 및 상호 작용을 담당합니다.
  */
 public class CalendarDBConnection {
-    private Connection connection;
-    String calendarDB = "jdbc:sqlite:src/database.sqlite";
+    private static final Logger logger = Logger.getLogger(CalendarDBConnection.class.getName());
+    private static final String calendarDB = "jdbc:sqlite:src/database.sqlite";
+    private static Connection connection;
 
     /**
      * CalendarDBConnection 클래스의 생성자입니다.
@@ -24,25 +27,25 @@ public class CalendarDBConnection {
      */
     private void initializeDatabaseConnection() {
         try {
-            Class.forName("org.sqlite.JDBC"); // SQLite JDBC 드라이버를 로드
-            connection = DriverManager.getConnection(calendarDB);
-            connection.setAutoCommit(false); // AutoCommit 모드를 해제
-            System.out.println("Calendar 데이터베이스에 연결 중");
+            Class.forName("org.sqlite.JDBC");
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(calendarDB);
+                connection.setAutoCommit(false);
+                logger.info("Calendar 데이터베이스에 연결 중");
 
-            // 테이블 생성 SQL 실행
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS calendarDB (" +
-                    "id INTEGER," +
-                    "calendardate TEXT, " +
-                    "schedule TEXT, " +
-                    "reminder INTEGER, " +
-                    "homework INTEGER)";
+                String createTableSQL = "CREATE TABLE IF NOT EXISTS calendarDB (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "calendardate TEXT, " +
+                        "schedule TEXT, " +
+                        "reminder BOOLEAN, " +
+                        "homework BOOLEAN)";
 
-            try (Statement statement = connection.createStatement()) {
-                statement.execute(createTableSQL);
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute(createTableSQL);
+                }
             }
         } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-            System.out.println("Calendar 데이터베이스에 연결 안됨");
+            logger.log(Level.SEVERE, "Calendar 데이터베이스 연결 실패", e);
         }
     }
 
@@ -51,21 +54,21 @@ public class CalendarDBConnection {
      *
      * @return 데이터베이스 연결 객체
      */
-    public Connection getConnection() {
+    public static synchronized Connection getConnection() {
         return connection;
     }
 
     /**
      * 데이터베이스 연결을 닫습니다.
      */
-    public void closeConnection() {
+    public static void closeConnection() {
         try {
             if (connection != null) {
                 connection.close();
-                System.out.println("Calendar 데이터베이스 연결 닫힘");
+                logger.info("Calendar 데이터베이스 연결 닫힘");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Calendar 데이터베이스 연결 닫기 실패", e);
         }
     }
 
@@ -77,23 +80,19 @@ public class CalendarDBConnection {
      */
     public List<String> getSchedulesForDate(Date date) {
         List<String> schedules = new ArrayList<>();
-        try {
-            initializeDatabaseConnection();
-            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-            String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+        String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
 
-            PreparedStatement statement = connection.prepareStatement(selectSQL);
+        try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
             statement.setString(1, formattedDate);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                String schedule = resultSet.getString("schedule");
-                schedules.add(schedule);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String schedule = resultSet.getString("schedule");
+                    schedules.add(schedule);
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            closeConnection();
+            logger.log(Level.SEVERE, "일정 조회 실패", e);
         }
         return schedules;
     }
@@ -105,42 +104,79 @@ public class CalendarDBConnection {
      * @param schedule 추가할 일정 내용
      */
     public void addSchedule(Date date, String schedule) {
-        try {
-            initializeDatabaseConnection();
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+        String insertQuery = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
 
-            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-
-            String insertQuery = "INSERT INTO calendarDB (date, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                preparedStatement.setString(1, formattedDate);
-                preparedStatement.setString(2, schedule);
-                preparedStatement.setString(3, ""); // 미리 알림 필드 초기화
-                preparedStatement.setString(4, ""); // 숙제 필드 초기화
-                preparedStatement.executeUpdate();
-                connection.commit(); // 변경 사항 커밋
-            }
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(insertQuery)) {
+            preparedStatement.setString(1, formattedDate);
+            preparedStatement.setString(2, schedule);
+            preparedStatement.setBoolean(3, false); // 미리 알림 필드 초기화
+            preparedStatement.setBoolean(4, false); // 숙제 필드 초기화
+            preparedStatement.executeUpdate();
+            connection.commit(); // 변경 사항 커밋
         } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("Calendar 데이터베이스 추가 중 오류 발생");
+            logger.log(Level.SEVERE, "Calendar 데이터베이스 추가 중 오류 발생", e);
             try {
-                connection.rollback();
+                if (connection != null) {
+                    connection.rollback();
+                }
             } catch (SQLException ex) {
-                ex.printStackTrace();
+                logger.log(Level.SEVERE, "Calendar 데이터베이스 롤백 실패", ex);
             }
-        } finally {
-            closeConnection();
         }
     }
 
     /**
-     * SQL 쿼리를 실행할 준비된 {@link PreparedStatement}를 반환합니다.
+     * 특정 날짜의 모든 일정을 데이터베이스에서 삭제합니다.
      *
-     * @param query 실행할 SQL 쿼리
-     * @return 준비된 {@link PreparedStatement}
-     * @throws SQLException SQL 예외가 발생하는 경우
+     * @param date 삭제할 일정의 날짜
      */
-    public PreparedStatement prepareStatement(String query) throws SQLException {
-        Connection connection = getConnection();
-        return connection.prepareStatement(query);
+    public void clearSchedulesForDate(Date date) {
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+        String deleteQuery = "DELETE FROM calendarDB WHERE calendardate = ?";
+
+        try (PreparedStatement preparedStatement = getConnection().prepareStatement(deleteQuery)) {
+            preparedStatement.setString(1, formattedDate);
+            preparedStatement.executeUpdate();
+            connection.commit(); // 변경 사항 커밋
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "Calendar 데이터베이스에서 일정 삭제 중 오류 발생", e);
+            try {
+                if (connection != null) {
+                    connection.rollback();
+                }
+            } catch (SQLException ex) {
+                logger.log(Level.SEVERE, "Calendar 데이터베이스 롤백 실패", ex);
+            }
+        }
+    }
+
+    /**
+     * 지정된 기간 내의 모든 일정을 가져옵니다.
+     *
+     * @param startDate 조회 시작 날짜
+     * @param endDate   조회 종료 날짜
+     * @return 기간 내의 모든 일정 목록
+     */
+    public List<String> getSchedulesForDateRange(Date startDate, Date endDate) {
+        List<String> schedules = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedStartDate = sdf.format(startDate);
+        String formattedEndDate = sdf.format(endDate);
+        String selectSQL = "SELECT schedule FROM calendarDB WHERE calendardate BETWEEN ? AND ?";
+
+        try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
+            statement.setString(1, formattedStartDate);
+            statement.setString(2, formattedEndDate);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String schedule = resultSet.getString("schedule");
+                    schedules.add(schedule);
+                }
+            }
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "기간 내 일정 조회 실패", e);
+        }
+        return schedules;
     }
 }
