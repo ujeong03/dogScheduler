@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.plaf.ColorUIResource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -23,6 +24,7 @@ public class MainCalendar extends JPanel {
     private ImageIcon openCalendarButton;
     private JPanel calendarPanel;
     private CalendarDBConnection calendarDB;
+
 
 
     /**
@@ -143,8 +145,19 @@ public class MainCalendar extends JPanel {
     private void updateCalendar() {
         calendarPanel.removeAll();
 
-        // 현재 주 표시
-        List<Date> weekDates = getWeekDates(currentDate);
+        List<Date> currentWeekDates = getWeekDates(currentDate);
+        List<Date> nextWeekDates = getWeekDates(getNextWeekStart(currentStartDate));
+
+        displayWeek(currentWeekDates);
+        displayWeek(nextWeekDates);
+
+        // UI 업데이트
+        revalidate();
+        repaint();
+    }
+
+    //일정 표시하기
+    private void displayWeek(List<Date> weekDates) {
         for (Date date : weekDates) {
             JPanel datePanel = new JPanel(new BorderLayout());
 
@@ -159,48 +172,31 @@ public class MainCalendar extends JPanel {
 
             datePanel.add(dateLabel, BorderLayout.NORTH);
 
-            JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
-            scheduleLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
-            datePanel.add(scheduleLabel, BorderLayout.CENTER);
+            // 일정을 추가하는 부분
+            List<String> schedules = calendarDB.getSchedulesForDate(date);
+            JPanel schedulesPanel = new JPanel(new GridLayout(schedules.size(), 1)); // 일정을 세로로 표시하기 위한 패널
+            schedulesPanel.setBackground(new Color(252,247,244));
 
-            calendarPanel.add(datePanel);
-        }
-
-        // 다음 주 표시
-        List<Date> nextWeekDates = getWeekDates(getNextWeekStart(currentStartDate));
-        for (Date date : nextWeekDates) {
-            JPanel datePanel = new JPanel(new BorderLayout());
-
-            datePanel.setBackground(Color.WHITE);
-            JLabel dateLabel = new JLabel(new SimpleDateFormat("MM-dd").format(date), JLabel.LEFT);
-            dateLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
-
-            if (isToday(date)) {
-                dateLabel.setBackground(Color.PINK); // 오늘 날짜에 PINK로 하이라이트 하기
-                dateLabel.setOpaque(true);
+            for (String schedule : schedules) {
+                JLabel scheduleLabel = new JLabel("📌 " + schedule);
+                schedulesPanel.add(scheduleLabel);
             }
 
-            datePanel.add(dateLabel, BorderLayout.NORTH);
+            JScrollPane scrollPane = new JScrollPane(schedulesPanel); // 스크롤 가능하도록 스크롤 패널에 추가
+            scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); // 수직 스크롤바 필요시 활성화
+            scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED); // 수평 스크롤바 필요시 활성화
+            datePanel.add(scrollPane, BorderLayout.CENTER);
 
-            JLabel scheduleLabel = new JLabel(getScheduleText(date), JLabel.CENTER);
-            scheduleLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK)); // Add border for better visibility
-            datePanel.add(scheduleLabel, BorderLayout.CENTER);
+            // 스크롤바를 숨김
+            scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
+            scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, 0));
+            scrollPane.getVerticalScrollBar().setVisible(false);
+            scrollPane.getHorizontalScrollBar().setVisible(false);
+
             calendarPanel.add(datePanel);
         }
-        // UI 업데이트
-        revalidate();
-        repaint();
     }
 
-    //날짜에 맞춰 스케쥴 보여주기
-    private String getScheduleText(Date date) {
-        List<String> schedules = calendarDB.getSchedulesForDate(date);
-        StringBuilder message = new StringBuilder();
-        for (String schedule : schedules) {
-            message.append("- ").append(schedule).append("<br>");
-        }
-        return "<html>" + message + "</html>";
-    }
 
     //이번주 날짜 가져오기
     private List<Date> getWeekDates(Date startDate) {

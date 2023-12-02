@@ -14,7 +14,7 @@ public class MainPage {
      */
     public MainPage() {
         SwingUtilities.invokeLater(() -> {
-            JFrame mainFrame = new JFrame("메인 페이지");
+            JFrame mainFrame = new JFrame("멍멍 ! 🐶 오늘도 화이팅 ");
 
             // 프레임을 전체 화면 크기로 설정
             mainFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
