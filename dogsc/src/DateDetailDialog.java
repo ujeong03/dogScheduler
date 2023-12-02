@@ -1,14 +1,12 @@
 import javax.swing.*;
 import java.awt.*;
-import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * DateDetailDialog 클래스는 특정 날짜의 일정을 상세하게 보여주는 다이얼로그입니다.
- */
 public class DateDetailDialog extends JDialog {
     private JLabel dateLabel;
     private JPanel schedulesPanel;
@@ -16,33 +14,26 @@ public class DateDetailDialog extends JDialog {
     private JButton saveButton;
     private Calendar calendar;
     private List<SchedulePanel> schedulePanels;
-    private JButton calendarButton;
+    private JPanel dayPanel;
     private int day;
-    private JButton dayButton;
 
-    /**
-     * DateDetailDialog 클래스의 생성자입니다.
-     *
-     * @param parent     부모 프레임
-     * @param title      다이얼로그 타이틀
-     * @param modal      모달 여부
-     * @param day        날짜
-     * @param dayButton  날짜를 나타내는 버튼
-     */
+    // CalendarDBConnection 인스턴스 추가
+    private CalendarDBConnection dbConnection;
 
-    public DateDetailDialog(JFrame parent, String title, boolean modal, int day, JButton dayButton) {
+    public DateDetailDialog(JFrame parent, String title, boolean modal, int day, JPanel dayPanel, CalendarDBConnection dbConnection) {
+
+
         super(parent, title, modal);
         setSize(800, 600);
         setLayout(new BorderLayout());
 
         this.day = day;
-        this.dayButton = dayButton;
+        this.dayPanel = dayPanel;
 
         calendar = Calendar.getInstance();
         schedulePanels = new ArrayList<>();
-        this.calendarButton = calendarButton;
 
-        updateCalendarButtonText();
+        updateDateLabel(day);
 
         dateLabel = new JLabel("", JLabel.CENTER);
         dateLabel.setFont(new Font("Arial", Font.BOLD, 24));
@@ -63,18 +54,18 @@ public class DateDetailDialog extends JDialog {
 
         JPanel bottomPanel = new JPanel(new FlowLayout());
         saveButton = new JButton("저장");
-        saveButton.addActionListener(e -> {
-            try {
-                saveSchedules();
-            } catch (ClassNotFoundException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        saveButton.addActionListener(e -> saveSchedules());
         bottomPanel.add(saveButton);
         add(bottomPanel, BorderLayout.SOUTH);
+
+        // CalendarDBConnection 초기화
+        dbConnection = new CalendarDBConnection();
+
+        // 기존 일정 불러오기
+        loadSchedules();
     }
 
-    public void updateDateLabel(int day) {
+    private void updateDateLabel(int day) {
         String dayOfWeek = getDayOfWeek(day);
         dateLabel.setText(day + "일 (" + dayOfWeek + ")");
     }
@@ -89,95 +80,43 @@ public class DateDetailDialog extends JDialog {
         SchedulePanel schedulePanel = new SchedulePanel();
         schedulePanels.add(schedulePanel);
         schedulesPanel.add(schedulePanel);
-
-        SwingUtilities.invokeLater(() -> {
-            revalidate();
-            repaint();
-            updateCalendarButtonText();
-        });
+        revalidate();
+        repaint();
     }
 
-
-
-    private void saveSchedules() throws ClassNotFoundException {
-        String url = "jdbc:sqlite:src/todoDB.sqlite";
-        Class.forName("org.sqlite.JDBC");
-        createTableIfNotExists();
-        try (Connection conn = DriverManager.getConnection(url)) {
-            for (SchedulePanel schedulePanel : schedulePanels) {
-                String title = schedulePanel.getTitle();
-                boolean isReminder = schedulePanel.isReminderSelected();
-                boolean isHomework = schedulePanel.isHomeworkSelected();
-
-                String sql = "INSERT INTO schedules (title, isReminder, isHomework) VALUES (?, ?, ?)";
-                try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                    pstmt.setString(1, title);
-                    pstmt.setBoolean(2, isReminder);
-                    pstmt.setBoolean(3, isHomework);
-                    pstmt.executeUpdate();
-                }
-            }
-            JOptionPane.showMessageDialog(this, "일정이 저장되었습니다.");
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            JOptionPane.showMessageDialog(this, "데이터베이스 저장 중 오류가 발생했습니다.");
-        }
+    private void saveSchedules() {
         List<String> schedulesForDay = schedulePanels.stream()
                 .map(SchedulePanel::getTitle)
                 .collect(Collectors.toList());
+
+        // 데이터베이스에 저장
+        dbConnection.clearSchedulesForDate(new Date());
+        for (String schedule : schedulesForDay) {
+            dbConnection.addSchedule(new Date(), schedule);
+        }
+
         ((CalendarWindow) getParent()).updateDayButton(day, schedulesForDay);
-
-        updateCalendarButtonText();
+        dispose();
     }
 
-    private void createTableIfNotExists() {
-        String url = "jdbc:sqlite:src/todoDB.sqlite";
+    // 기존 일정 불러와서 UI에 표시
+    private void loadSchedules() {
+        Date currentDate = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = sdf.format(currentDate);
 
-        String sql = "CREATE TABLE IF NOT EXISTS schedules ("
-                + "id INTEGER PRIMARY KEY,"
-                + "title TEXT NOT NULL,"
-                + "isReminder BOOLEAN NOT NULL,"
-                + "isHomework BOOLEAN NOT NULL);";
+        List<String> schedules = dbConnection.getSchedulesForDate(currentDate);
 
-        try (Connection conn = DriverManager.getConnection(url);
-             Statement stmt = conn.createStatement()) {
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
+        for (String schedule : schedules) {
+            SchedulePanel schedulePanel = new SchedulePanel(schedule);
+            schedulePanels.add(schedulePanel);
+            schedulesPanel.add(schedulePanel);
         }
+
+        revalidate();
+        repaint();
     }
 
-
-    /**
-     * 일정 패널을 제거하고 화면을 업데이트합니다.
-     *
-     * @param schedulePanel 제거할 일정 패널
-     */
-    public void removeSchedulePanel(SchedulePanel schedulePanel) {
-        schedulePanels.remove(schedulePanel);
-        schedulesPanel.remove(schedulePanel);
-
-        SwingUtilities.invokeLater(() -> {
-            revalidate();
-            repaint();
-            updateCalendarButtonText();
-        });
-    }
-
-    /**
-     * 캘린더 버튼 텍스트를 업데이트합니다.
-     */
-    private void updateCalendarButtonText() {
-        StringBuilder buttonText = new StringBuilder("일정\n");
-        for (SchedulePanel schedulePanel : schedulePanels) {
-            buttonText.append("* ").append(schedulePanel.getTitle()).append("\n");
-        }
-        //calendarButton.setText(buttonText.toString());
-    }
-
-    /**
-     * 일정을 나타내는 패널 클래스입니다.
-     */
     private class SchedulePanel extends JPanel {
         private JTextField titleField;
         private JCheckBox reminderCheckBox;
@@ -190,7 +129,7 @@ public class DateDetailDialog extends JDialog {
             reminderCheckBox = new JCheckBox("리마인더");
             homeworkCheckBox = new JCheckBox("과제");
 
-            add(new JLabel("일정 추가:"));
+            add(new JLabel("일정:"));
             add(titleField);
             add(reminderCheckBox);
             add(homeworkCheckBox);
@@ -204,6 +143,10 @@ public class DateDetailDialog extends JDialog {
             return titleField.getText();
         }
 
+        public void setTitle(String title) {
+            titleField.setText(title);
+        }
+
         public boolean isReminderSelected() {
             return reminderCheckBox.isSelected();
         }
@@ -213,8 +156,10 @@ public class DateDetailDialog extends JDialog {
         }
 
         private void deleteSchedulePanel() {
-            DateDetailDialog parentDialog = (DateDetailDialog) SwingUtilities.getWindowAncestor(this);
-            parentDialog.removeSchedulePanel(this);
+            schedulePanels.remove(this);
+            schedulesPanel.remove(this);
+            revalidate();
+            repaint();
         }
     }
 }
