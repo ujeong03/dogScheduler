@@ -55,6 +55,7 @@ public class TodoList extends JPanel {
     private int prevDayButtonClickCount = 0;
     private int nextDayButtonClickCount = 0;
 
+
     //순서 바꾸기
     private int orderIndex;
     private TodoData todoData;
@@ -314,7 +315,9 @@ public class TodoList extends JPanel {
 
         todoItemPanel.setFocusable(true); // 키 이벤트를 받을 수 있도록 패널에 포커스 설정
 
+
         //투두 순서를 바꾸기 위한 코드
+
         todotextField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -324,8 +327,10 @@ public class TodoList extends JPanel {
                 System.out.println(todoDate);
                 is_completed = todoData.isCompleted();
 
+
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 compareDate = dateFormat.format(currentDate);
+
             }
         });
 
@@ -334,7 +339,9 @@ public class TodoList extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent e) {
+
                     if (e.getKeyCode() == KeyEvent.VK_UP) {
+
                     // 방향키를 눌렀을 때, 현재 선택된 투두 아이템의 순서를 변경
 
                     if ((todoText != null) && (orderIndex >1)) {
@@ -367,8 +374,10 @@ public class TodoList extends JPanel {
                         // 변경된 순서로 데이터 다시 로드하여 UI 업데이트
                         loadTodosFromDatabase();
                     }
+
                 }
             }
+
 
         });
 

@@ -51,6 +51,7 @@ public class MainCalendar extends JPanel {
 
 
 
+
     /**
      * MainCalendar 클래스의 생성자
      * 기본적인 틀을 조정합니다.
@@ -191,6 +192,7 @@ public class MainCalendar extends JPanel {
         repaint();
     }
 
+
    /**
     * 해당하는 주의 일정을 보여줌
     *
@@ -199,6 +201,7 @@ public class MainCalendar extends JPanel {
     *
     * @param weekDates 해당하는 주의 리스트
     */
+
     private void displayWeek(List<Date> weekDates) {
         for (Date date : weekDates) {
             JPanel datePanel = new JPanel(new BorderLayout());
@@ -223,6 +226,7 @@ public class MainCalendar extends JPanel {
             for (String schedule : schedules) {
                 JLabel scheduleLabel = new JLabel("V " + schedule);
                 scheduleLabel.setFont(calendarfont);
+
                 schedulesPanel.add(scheduleLabel);
             }
 

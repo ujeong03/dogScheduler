@@ -27,7 +27,7 @@ public class CalendarDBConnection {
             Class.forName("org.sqlite.JDBC"); // SQLite JDBC 드라이버를 로드
             connection = DriverManager.getConnection(calendarDB);
             connection.setAutoCommit(false); // AutoCommit 모드를 해제
-            System.out.println("Calendar 데이터베이스에 연결 중");
+           // System.out.println("Calendar 데이터베이스에 연결 중");
 
             // 테이블 생성 SQL 실행
             String createTableSQL = "CREATE TABLE IF NOT EXISTS calendarDB (" +
@@ -42,7 +42,7 @@ public class CalendarDBConnection {
             }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-            System.out.println("Calendar 데이터베이스에 연결 안됨");
+           // System.out.println("Calendar 데이터베이스에 연결 안됨");
         }
     }
 
@@ -62,7 +62,7 @@ public class CalendarDBConnection {
         try {
             if (connection != null) {
                 connection.close();
-                System.out.println("Calendar 데이터베이스 연결 닫힘");
+               // System.out.println("Calendar 데이터베이스 연결 닫힘");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -121,7 +121,7 @@ public class CalendarDBConnection {
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            System.out.println("Calendar 데이터베이스 추가 중 오류 발생");
+          //  System.out.println("Calendar 데이터베이스 추가 중 오류 발생");
             try {
                 connection.rollback();
             } catch (SQLException ex) {
