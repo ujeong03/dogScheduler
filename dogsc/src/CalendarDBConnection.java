@@ -3,10 +3,13 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class CalendarDBConnection {
-    private Connection connection;
-    String calendarDB = "jdbc:sqlite:src/database.sqlite";
+    private static final Logger logger = Logger.getLogger(CalendarDBConnection.class.getName());
+    private static final String calendarDB = "jdbc:sqlite:src/database.sqlite";
+    private static Connection connection;
 
     public CalendarDBConnection() {
         initializeDatabaseConnection();
@@ -14,68 +17,61 @@ public class CalendarDBConnection {
 
     private void initializeDatabaseConnection() {
         try {
-            Class.forName("org.sqlite.JDBC"); // SQLite JDBC 드라이버를 로드
-            connection = DriverManager.getConnection(calendarDB);
-            connection.setAutoCommit(false); // AutoCommit 모드를 해제
-           // System.out.println("Calendar 데이터베이스에 연결 중");
+            Class.forName("org.sqlite.JDBC");
+            if (connection == null || connection.isClosed()) {
+                connection = DriverManager.getConnection(calendarDB);
+                connection.setAutoCommit(false);
+                logger.info("Calendar 데이터베이스에 연결 중");
 
-            // 테이블 생성 SQL 실행
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS calendarDB (" +
-                    "id INTEGER," +
-                    "calendardate TEXT, " +
-                    "schedule TEXT, " +
-                    "reminder INTEGER, " +
-                    "homework INTEGER)";
+                String createTableSQL = "CREATE TABLE IF NOT EXISTS calendarDB (" +
+                        "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                        "calendardate TEXT, " +
+                        "schedule TEXT, " +
+                        "reminder BOOLEAN, " +
+                        "homework BOOLEAN)";
 
-            try (Statement statement = connection.createStatement()) {
-                statement.execute(createTableSQL);
+                try (Statement statement = connection.createStatement()) {
+                    statement.execute(createTableSQL);
+                }
             }
         } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-           // System.out.println("Calendar 데이터베이스에 연결 안됨");
+            logger.log(Level.SEVERE, "Calendar 데이터베이스 연결 실패", e);
         }
     }
-
 
     public static synchronized Connection getConnection() {
         return connection;
     }
 
     public static void closeConnection() {
-
         try {
             if (connection != null) {
                 connection.close();
-               // System.out.println("Calendar 데이터베이스 연결 닫힘");
+                logger.info("Calendar 데이터베이스 연결 닫힘");
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.log(Level.SEVERE, "Calendar 데이터베이스 연결 닫기 실패", e);
         }
     }
 
     public List<String> getSchedulesForDate(Date date) {
         List<String> schedules = new ArrayList<>();
-        try {
-            initializeDatabaseConnection();
-            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-            String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
+        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+        String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
 
-            PreparedStatement statement = connection.prepareStatement(selectSQL);
+        try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
             statement.setString(1, formattedDate);
-            ResultSet resultSet = statement.executeQuery();
-
-            while (resultSet.next()) {
-                String schedule = resultSet.getString("schedule");
-                schedules.add(schedule);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    String schedule = resultSet.getString("schedule");
+                    schedules.add(schedule);
+                }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            closeConnection();
+            logger.log(Level.SEVERE, "일정 조회 실패", e);
         }
         return schedules;
     }
-
 
     public List<String> getSchedulesForDateRange(Date startDate, Date endDate) {
         List<String> schedules = new ArrayList<>();
