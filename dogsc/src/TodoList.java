@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -19,18 +21,40 @@ public class TodoList extends JPanel {
     private JTextField todoTextField;
     private TodoListBG todoListPanel; //배경화면을 넣은 패널
     private RoundButton rewardButton;
-    Font datefont = new Font("배달의민족 주아",Font.BOLD,15);
-    Font todofont = new Font("배달의민족 주아",Font.BOLD,17);
+
+    //폰트
+    InputStream inputStream1 = getClass().getResourceAsStream("font/BMJUA_ttf.ttf");
+    InputStream inputStream2 = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
+    Font datefont;
+    {
+        try {
+            datefont = Font.createFont(Font.TRUETYPE_FONT, inputStream1).deriveFont(Font.BOLD,15);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    Font todofont;
+    {
+        try {
+            todofont = Font.createFont(Font.TRUETYPE_FONT, inputStream2).deriveFont(Font.BOLD,17);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // 날짜 관련 필드
     private Date currentDate;
+
     private TodoDBConnection todoDBConnection;
 
     // 버튼 클릭 횟수
     private int prevDayButtonClickCount = 0;
     private int nextDayButtonClickCount = 0;
 
-    private Component selectedTodoItem;
 
     //순서 바꾸기
     private int orderIndex;
@@ -291,11 +315,9 @@ public class TodoList extends JPanel {
 
         todoItemPanel.setFocusable(true); // 키 이벤트를 받을 수 있도록 패널에 포커스 설정
 
-        // TodoList 클래스의 순서 바꾸기 관련 코드 일부
 
-// 이전에 선언한 orderIndex 필드를 사용하여 순서 조절 기능을 구현합니다.
-// 이 코드는 addTodoItem 메서드 내부에 위치할 것입니다.
-// 'todotextField' 대신 'todotextField'를 사용해야 합니다.
+        //투두 순서를 바꾸기 위한 코드
+
         todotextField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -304,11 +326,11 @@ public class TodoList extends JPanel {
                 todoDate = todoData.getTodoDate();
                 System.out.println(todoDate);
                 is_completed = todoData.isCompleted();
-                System.out.println(orderIndex);
+
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 compareDate = dateFormat.format(currentDate);
-                System.out.println("비교 날짜"+compareDate);
+
             }
         });
 
@@ -317,8 +339,9 @@ public class TodoList extends JPanel {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if(todoDate.equals(compareDate)){
-                if (e.getKeyCode() == KeyEvent.VK_UP) {
+
+                    if (e.getKeyCode() == KeyEvent.VK_UP) {
+
                     // 방향키를 눌렀을 때, 현재 선택된 투두 아이템의 순서를 변경
 
                     if ((todoText != null) && (orderIndex >1)) {
@@ -351,8 +374,11 @@ public class TodoList extends JPanel {
                         // 변경된 순서로 데이터 다시 로드하여 UI 업데이트
                         loadTodosFromDatabase();
                     }
-                }}
+
+                }
             }
+
+
         });
 
         todoItemPanel.add(checkBox);
