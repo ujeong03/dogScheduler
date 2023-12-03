@@ -1,5 +1,6 @@
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -8,10 +9,11 @@ import java.io.IOException;
  * 강아지 키우기 페이지의 메인 클래스입니다.
  */
 public class DogPage {
-    private JPanel contentPane;
+    private JPanel rewardBar;
     private JFrame frame;
-    private JButton dogButton, feedButton, soapButton, ballButton;
-    private JLabel title, rewardLabel, levelLabel, heart, play, bath, eat;
+    private JButton dogButton;
+    private JButton feedButton, soapButton, ballButton;
+    private JLabel title, rewardLabel, levelLabel, heart, play, bath, eat, contentPane;
     private JProgressBar closenessProgressBar;
     private DogCare dogCare;
     private ControlReward controlReward;
@@ -36,15 +38,18 @@ public class DogPage {
         frame.setVisible(true);
 
         // contentpane 생성
-        contentPane = new JPanel();
-        contentPane.setBackground(Color.WHITE);
-        contentPane.setBorder(new EmptyBorder(5,5,5,5));
+        contentPane = new JLabel(new ImageIcon("dog_image/background.png"));
         frame.setContentPane(contentPane);
         contentPane.setLayout(null);
 
+        // 모든 보상 버튼을 포함하는 패널 생성
+        rewardBar =  new JPanel();
+        rewardBar.setOpaque(false);
+        rewardBar.setLayout(null);
+
         // 제목 라벨 생성
         title = new JLabel("MY PUPPY");
-        title.setFont(new Font("맑은 고딕", Font.BOLD, 50));
+        title.setFont(new Font("배달의민족 주아", Font.BOLD, 50));
 
         // 강아지 버튼 생성
         dogButton = new JButton(new ImageIcon(dogLevel.growUp(dogLevel.getLevel())));
@@ -53,32 +58,43 @@ public class DogPage {
 
         // 보상 라벨 생성
         rewardLabel = new JLabel("보상 : " + controlReward.getReward() + "개");
-        rewardLabel.setFont(new Font("맑은 고딕", Font.BOLD, 27));
+        rewardLabel.setFont(new Font("배달의민족 주아", Font.BOLD, 27));
+
+        try {
+            // 룩앤필 설정 변경
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         // 먹이 버튼 생성
         feedButton = new JButton(new ImageIcon("dog_image/feed.png"));
-        feedButton.setContentAreaFilled(false);
-        feedButton.setBorderPainted(false);
+        feedButton.setBackground(Color.WHITE);
+        feedButton.setFocusPainted(false);
+        feedButton.setOpaque(false);
 
         // 목욕 버튼 생성
         soapButton = new JButton(new ImageIcon("dog_image/soap.png"));
-        soapButton.setContentAreaFilled(false);
-        soapButton.setBorderPainted(false);
+        soapButton.setBackground(Color.WHITE);
+        soapButton.setFocusPainted(false);
+        soapButton.setOpaque(false);
 
         // 장난감 버튼 생성
         ballButton = new JButton(new ImageIcon("dog_image/ball.png"));
-        ballButton.setContentAreaFilled(false);
-        ballButton.setBorderPainted(false);
+        ballButton.setBackground(Color.WHITE);
+        ballButton.setFocusPainted(false);
+        ballButton.setOpaque(false);
 
         // 레벨 라벨 생성
         levelLabel = new JLabel("level " + dogLevel.getLevel());
-        levelLabel.setFont(new Font("맑은 고딕", Font.BOLD, 20));
+        levelLabel.setFont(new Font("배달의민족 주아", Font.BOLD, 20));
 
         // 친밀도 프로그레스바 생성
         closenessProgressBar = new JProgressBar(0, 100);
         closenessProgressBar.setValue(dogLevel.getCloseness());
         closenessProgressBar.setStringPainted(true);
         closenessProgressBar.setBackground(Color.WHITE);
+        closenessProgressBar.setForeground(new Color(224,145,145));
 
         // 하트 이미지 라벨 생성
         heart = new JLabel(new ImageIcon("dog_image/heart.png"));
@@ -140,6 +156,10 @@ public class DogPage {
             }
         });
 
+        // 보상 버튼 패널 추가
+        rewardBar.setBounds(880,150,200,520);
+        contentPane.add(rewardBar);
+
         // 제목 라벨 위치 설정 및 패널에 추가
         title.setBounds(400,70, 600,50);
         contentPane.add(title);
@@ -153,16 +173,16 @@ public class DogPage {
         contentPane.add(rewardLabel);
 
         // 먹이 버튼 위치 설정 및 패널에 추가
-        feedButton.setBounds(910, 170, 155, 155);
-        contentPane.add(feedButton);
+        feedButton.setBounds(15, 0, 170, 160);
+        rewardBar.add(feedButton);
 
         // 목욕 버튼 위치 설정 및 패널에 추가
-        soapButton.setBounds(910, 330, 165, 165);
-        contentPane.add(soapButton);
+        soapButton.setBounds(15, 170, 170, 160);
+        rewardBar.add(soapButton);
 
         // 장난감 버튼 위치 설정 및 패널에 추가
-        ballButton.setBounds(910, 520, 150,150);
-        contentPane.add(ballButton);
+        ballButton.setBounds(15, 340, 170,160);
+        rewardBar.add(ballButton);
 
         // 레벨 라벨 위치 설정 및 패널에 추가
         levelLabel.setBounds(200, 680, 100, 30);
@@ -188,7 +208,7 @@ public class DogPage {
         bath.setVisible(false);
 
         // 놀기 이미지 라벨 위치 설정 및 패널에 추가
-        play.setBounds(750, 250, 150,150);
+        play.setBounds(700, 200, 150,150);
         contentPane.add(play);
         play.setVisible(false);
     }
