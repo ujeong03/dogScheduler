@@ -19,16 +19,21 @@ import java.time.LocalDateTime;
  * 보상으로 먹이, 목욕, 장난감을 강아지에게 제공하거나 강아지를 쓰다듬은 후 친밀도 및 레벨을 상승시키는 강아지 케어 클래스입니다.
  */
 public class DogCare {
+    private int touchCount;  // 쓰다듬기 횟수를 저장
+    private String touchPath;  // 쓰다듬기 횟수가 저장된 파일 경로
+
+    // 클래스 객체 선언
     private ControlReward controlReward;
     private DogLevel dogLevel;
+
+    // 대화 상자 생성을 위한 객체 선언
     private JOptionPane optionPane;
     private JFrame frame;
-    private int touchCount;
-    private String touchPath;
+
 
     /**
      * DogCare 클래스의 생성자입니다.
-     * 클래스 초기화 시 ControlReward, DogLevel 객체를 생성하고 강아지 클릭 횟수를 초기화합니다.
+     * 클래스 초기화 시 ControlReward, DogLevel 인스턴스를 생성하고 강아지 클릭 횟수와 경로를 초기화합니다.
      */
     public DogCare() {
         this.controlReward = new ControlReward();
@@ -36,6 +41,7 @@ public class DogCare {
         this.touchPath = "dog_txt/touch.txt";
         this.touchCount = this.getTouchCount();
     }
+
 
     /**
      * 먹이, 목욕, 장난감 버튼 클릭 시 보상 -1, 친밀도 +10을 적용하고 친밀도 100 이상인 경우 레벨을 1 상승시킵니다.
@@ -48,9 +54,10 @@ public class DogCare {
         }
     }
 
+
     /**
      * 강아지 버튼 클릭 시 친밀도 +1을 적용하고, 친밀도 100 이상인 경우 레벨을 1 상승시킵니다.
-     * 강아지 클릭 횟수를 증가시키고, 매일 자정에 클릭 횟수를 초기화합니다.
+     * 또한 쓰다듬기 횟수를 증가시키고, 매일 자정에 쓰다듬기 횟수를 초기화합니다.
      */
     public void touchDog() {
         dogLevel.increaseCloseness(1);
@@ -58,10 +65,12 @@ public class DogCare {
         addTouchCount();
     }
 
+
     /**
-     * 파일에서 강아지 클릭 횟수를 읽어와 반환합니다.
+     * 파일에서 현재 강아지 클릭 횟수를 읽고 반환합니다.
      *
      * @return 현재 강아지 클릭 횟수
+     * @exception FileNotFoundException
      */
     public int getTouchCount() {
         try {
@@ -77,8 +86,11 @@ public class DogCare {
         }
     }
 
+
     /**
-     * 강아지 클릭 횟수를 1 증가시키고 파일에 저장합니다.
+     * 강아지를 클릭할 때마다 쓰다듬기 횟수를 1씩 증가시키고 파일에 저장합니다.
+     *
+     * @exception IOException
      */
     public void addTouchCount() {
         try {
@@ -93,8 +105,12 @@ public class DogCare {
         }
     }
 
+
     /**
      * 매일 자정에 강아지 클릭 횟수를 0으로 초기화합니다.
+     *
+     * @exception IOException
+     * @exception InterruptedException
      */
     public void resetTouchCount() {
         try {
@@ -125,8 +141,9 @@ public class DogCare {
         }
     }
 
+
     /**
-     * 강아지를 10번 초과 클릭 시 경고창을 띄웁니다.
+     * 강아지를 10번 초과 클릭할 시 대화 상자를 띄웁니다.
      */
     public void showTouchLimitDialog() {
         optionPane.showMessageDialog(frame, "오늘은 이미 10번을 쓰다듬었습니다.", "안내", JOptionPane.WARNING_MESSAGE);
