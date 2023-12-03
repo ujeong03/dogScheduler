@@ -1,6 +1,8 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -17,19 +19,49 @@ public class TodoList extends JPanel {
     private RoundButton prevDayButton;
     private RoundButton nextDayButton;
     private JTextField todoTextField;
-    private TodoListBG todoListPanel;
+    private TodoListBG todoListPanel; //배경화면을 넣은 패널
     private RoundButton rewardButton;
-    Font datefont = new Font("배달의민족 주아",Font.BOLD,15);
-    Font todofont = new Font("배달의민족 주아",Font.BOLD,17);
+
+    //폰트
+    InputStream inputStream1 = getClass().getResourceAsStream("font/BMJUA_ttf.ttf");
+    InputStream inputStream2 = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
+    Font datefont;
+    {
+        try {
+            datefont = Font.createFont(Font.TRUETYPE_FONT, inputStream1).deriveFont(Font.BOLD,15);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    Font todofont;
+    {
+        try {
+            todofont = Font.createFont(Font.TRUETYPE_FONT, inputStream2).deriveFont(Font.BOLD,17);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     // 날짜 관련 필드
     private Date currentDate;
+
     private TodoDBConnection todoDBConnection;
 
     // 버튼 클릭 횟수
     private int prevDayButtonClickCount = 0;
     private int nextDayButtonClickCount = 0;
 
+
+    //순서 바꾸기
+    private int orderIndex;
+    private TodoData todoData;
+    private String todoDate;
+    private int is_completed;
+    String compareDate; //날짜 비교해서 제한하기
 
     //투두 패널 배경
     private ImageIcon todoBGIcon = new ImageIcon("image/todolistBG.png");
@@ -135,8 +167,8 @@ public class TodoList extends JPanel {
         rewardButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int n = todoDBConnection.getDoneTodoCount(currentDate);
-               //ControlReward.addReward(n);
+                int n = todoDBConnection.getDoneTodoCount(getPreviousDate(currentDate));
+                //ControlReward.addReward(n);
             }
         });
 
@@ -279,13 +311,83 @@ public class TodoList extends JPanel {
             }
         });
 
+
+
+        todoItemPanel.setFocusable(true); // 키 이벤트를 받을 수 있도록 패널에 포커스 설정
+
+
+        //투두 순서를 바꾸기 위한 코드
+
+        todotextField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                todoData = todoDBConnection.getTodoDataFromText(todoText);
+                orderIndex = todoData.getOrderIndex();
+                todoDate = todoData.getTodoDate();
+                System.out.println(todoDate);
+                is_completed = todoData.isCompleted();
+
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                compareDate = dateFormat.format(currentDate);
+
+            }
+        });
+
+        todotextField.addKeyListener(new KeyAdapter() {
+
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+
+                    if (e.getKeyCode() == KeyEvent.VK_UP) {
+
+                    // 방향키를 눌렀을 때, 현재 선택된 투두 아이템의 순서를 변경
+
+                    if ((todoText != null) && (orderIndex >1)) {
+                        // 방향키를 누를 때마다 orderIndex를 변경하여 데이터베이스에 순서 업데이트
+                        orderIndex -=1; // 현재 선택된 투두 아이템의 순서를 감소시킴
+                        try {
+                            todoDBConnection.increaseOrderIndexIfDuplicate(orderIndex);
+                            todoDBConnection.updateOrderIndex(todoText, orderIndex,todoDate,is_completed); // 데이터베이스에서 순서 업데이트
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+
+                        // 변경된 순서로 데이터 다시 로드하여 UI 업데이트
+                        loadTodosFromDatabase();
+                    }
+                }
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    // 방향키를 눌렀을 때, 현재 선택된 투두 아이템의 순서를 변경
+
+                    if (todoDate.equals(compareDate) && todoText != null) {
+                        // 방향키를 누를 때마다 orderIndex를 변경하여 데이터베이스에 순서 업데이트
+                        orderIndex +=1; // 현재 선택된 투두 아이템의 순서를 감소시킴
+                        try {
+                            todoDBConnection.decreaseOrderIndexIfDuplicate(orderIndex);
+                            todoDBConnection.updateOrderIndex(todoText, orderIndex,todoDate,is_completed); // 데이터베이스에서 순서 업데이트
+                        } catch (SQLException ex) {
+                            throw new RuntimeException(ex);
+                        }
+
+                        // 변경된 순서로 데이터 다시 로드하여 UI 업데이트
+                        loadTodosFromDatabase();
+                    }
+
+                }
+            }
+
+
+        });
+
         todoItemPanel.add(checkBox);
         todoItemPanel.add(todotextField);
         todoItemPanel.add(deleteButton);
         todoItemPanel.setOpaque(false);
 
-
         todoListPanel.add(todoItemPanel);
         todoListPanel.revalidate();
     }
+
 }

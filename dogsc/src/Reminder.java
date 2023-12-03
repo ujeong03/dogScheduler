@@ -6,6 +6,7 @@ import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,7 +22,23 @@ public class Reminder extends JPanel {
     private JPanel reminderPanel;
     private List<ReminderItem> reminderItems;
 
-    Font reminderfont = new Font("배달의민족 주아",Font.BOLD,20);
+    // 폰트 파일 경로 설정
+    InputStream inputStream = getClass().getResourceAsStream("font/BMJUA_ttf.ttf");
+
+    // 폰트 로드
+    Font reminderfont;
+
+    {
+        try {
+            reminderfont = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(Font.BOLD,20);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     ImageIcon reminderBGIcon = new ImageIcon("image/reminderBG.png");
     Image reminderBG = reminderBGIcon.getImage();
 
