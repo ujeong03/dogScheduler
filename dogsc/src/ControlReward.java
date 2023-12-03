@@ -45,11 +45,13 @@ public class ControlReward {
      */
     public void addReward(int num){
         try {
-            this.rewardCount += num;
+            rewardCount = getReward();
+            rewardCount += num;
 
+            System.out.println(num);
             FileWriter rewardFileWriter = new FileWriter(rewardPath, false);
             BufferedWriter bw = new BufferedWriter(rewardFileWriter);
-            bw.write(Integer.toString(this.rewardCount));
+            bw.write(Integer.toString(rewardCount));
             bw.close();
         } catch(IOException e){
             e.printStackTrace();
