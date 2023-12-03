@@ -1,4 +1,5 @@
 import java.sql.*;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -54,9 +55,16 @@ public class CalendarDBConnection {
         }
     }
 
+
+    /**
+     * 지정한 날짜의 일정을 가져오는 메서드.
+     * @param date 조회할 날짜
+     * @return 해당 날짜의 일정 목록
+     */
     public List<String> getSchedulesForDate(Date date) {
         List<String> schedules = new ArrayList<>();
-        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = sdf.format(date);
         String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
 
         try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
@@ -73,39 +81,54 @@ public class CalendarDBConnection {
         return schedules;
     }
 
-    public List<String> getSchedulesForDateRange(Date startDate, Date endDate) {
-        List<String> schedules = new ArrayList<>();
-        String formattedStartDate = new SimpleDateFormat("yyyy-MM-dd").format(startDate);
-        String formattedEndDate = new SimpleDateFormat("yyyy-MM-dd").format(endDate);
-        String selectSQL = "SELECT * FROM calendarDB WHERE calendardate BETWEEN ? AND ?";
+
+    public List<Schedule> getSchedulesDetailsForDate(Date date) {
+        List<Schedule> schedules = new ArrayList<>();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String formattedDate = sdf.format(date);
+        String selectSQL = "SELECT id, schedule, reminder, homework FROM calendarDB WHERE calendardate = ?";
 
         try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
-            statement.setString(1, formattedStartDate);
-            statement.setString(2, formattedEndDate);
+            statement.setString(1, formattedDate);
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
-                    String schedule = resultSet.getString("schedule");
+                    int id = resultSet.getInt("id");
+                    String scheduleText = resultSet.getString("schedule");
+                    boolean isReminder = resultSet.getBoolean("reminder");
+                    boolean isHomework = resultSet.getBoolean("homework");
+
+                    Schedule schedule = new Schedule(id, scheduleText, formattedDate, isReminder, isHomework);
                     schedules.add(schedule);
                 }
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "일정 조회 실패", e);
+            logger.log(Level.SEVERE, "일정 상세 조회 실패", e);
         }
         return schedules;
     }
 
-    public void updateSchedule(String schedule, boolean isReminder, boolean isHomework) {
-        String updateQuery = "UPDATE calendarDB SET reminder = ?, homework = ? WHERE schedule = ?";
 
-        try (PreparedStatement preparedStatement = getConnection().prepareStatement(updateQuery)) {
-            preparedStatement.setBoolean(1, isReminder);
-            preparedStatement.setBoolean(2, isHomework);
-            preparedStatement.setString(3, schedule);
-            preparedStatement.executeUpdate();
+
+
+
+
+
+
+    public void addSchedule(Date date, String newSchedule, boolean isReminder, boolean isHomework) {
+        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+
+        String insertSQL = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
+
+        try (PreparedStatement statement = getConnection().prepareStatement(insertSQL)) {
+            statement.setObject(1, sqlDate);
+            statement.setString(2, newSchedule);
+            statement.setBoolean(3, isReminder);
+            statement.setBoolean(4, isHomework);
+            statement.executeUpdate();
             connection.commit();
-            logger.info("일정 업데이트됨: " + schedule);
+            logger.info("새로운 일정 추가됨: " + newSchedule);
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "일정 업데이트 중 오류 발생", e);
+            logger.log(Level.SEVERE, "일정 추가 중 오류 발생", e);
             rollbackConnection();
         }
     }
@@ -121,48 +144,8 @@ public class CalendarDBConnection {
     }
 
     public PreparedStatement prepareStatement(String query) throws SQLException {
-        Connection connection = getConnection();
-        return connection.prepareStatement(query);
+        return getConnection().prepareStatement(query);
     }
-
-    public void addSchedule(Date date, String newSchedule) {
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
-
-        String insertSQL = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
-
-        try (PreparedStatement statement = getConnection().prepareStatement(insertSQL)) {
-            statement.setObject(1, sqlDate);
-            statement.setString(2, newSchedule);
-            statement.setBoolean(3, false);
-            statement.setBoolean(4, false);
-            statement.executeUpdate();
-            connection.commit();
-            logger.info("새로운 일정 추가됨: " + newSchedule);
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "일정 추가 중 오류 발생", e);
-            rollbackConnection();
-        }
-    }
-    public boolean hasSchedulesForDate(Date date) {
-        String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
-        String selectSQL = "SELECT COUNT(*) FROM calendarDB WHERE calendardate = ?";
-
-        try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
-            statement.setString(1, formattedDate);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    int count = resultSet.getInt(1);
-                    return count > 0;
-                }
-            }
-        } catch (SQLException e) {
-            logger.log(Level.SEVERE, "일정 조회 실패", e);
-        }
-        return false;
-    }
-
-
-
-
-
 }
+
+
