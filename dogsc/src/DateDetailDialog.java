@@ -105,7 +105,7 @@ public class DateDetailDialog extends JDialog {
         JTextField scheduleTextField = new JTextField(20);
         JCheckBox reminder = new JCheckBox("리마인더");
         JCheckBox homework = new JCheckBox("과제");
-        JButton saveButton = new JButton("저장");
+        JButton updateButton = new JButton("수정"); // 버튼 이름을 "수정"으로 변경
 
         // 선택된 일정이 있을 경우, 해당 일정 정보를 텍스트 필드 및 체크박스에 설정
         if (schedule != null) {
@@ -114,12 +114,21 @@ public class DateDetailDialog extends JDialog {
             homework.setSelected(schedule.isHomework());
         }
 
-        saveButton.addActionListener(e -> saveSchedule());
+        updateButton.addActionListener(e -> {
+            // 새로운 Schedule 객체를 생성
+            assert schedule != null;
+            Schedule updatedSchedule = new Schedule(schedule.getId(), scheduleTextField.getText(),
+                    schedule.getDate(), // 여기에는 실제 날짜 정보가 들어가야 합니다.
+                    reminder.isSelected(), homework.isSelected());
+            // updateSchedule 메소드를 호출하여 데이터베이스에 변경 사항을 저장
+            dbConnection.updateSchedule(updatedSchedule);
+        });
+
 
         schedulePanel.add(scheduleTextField);
         schedulePanel.add(reminder);
         schedulePanel.add(homework);
-        schedulePanel.add(saveButton);
+        schedulePanel.add(updateButton);
 
         // UI 갱신
         schedulesPanel.add(schedulePanel);

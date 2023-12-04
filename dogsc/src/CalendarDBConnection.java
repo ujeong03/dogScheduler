@@ -117,7 +117,12 @@ public class CalendarDBConnection {
             statement.setInt(4, schedule.getId());
             statement.executeUpdate();
             connection.commit();
+
+            // 로그에 체크박스 상태 기록
             logger.info("일정 업데이트됨: " + schedule.getText());
+            logger.info("리마인더 상태: " + (schedule.isReminder() ? "활성화" : "비활성화"));
+            logger.info("과제 상태: " + (schedule.isHomework() ? "활성화" : "비활성화"));
+
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "일정 업데이트 중 오류 발생", e);
             rollbackConnection();
@@ -130,22 +135,33 @@ public class CalendarDBConnection {
 
 
 
+
     public int addSchedule(Date date, String newSchedule, boolean isReminder, boolean isHomework) {
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
         String insertSQL = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
 
-        try (PreparedStatement statement = getConnection().prepareStatement(insertSQL)) {
+        try (PreparedStatement statement = getConnection().prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
             statement.setObject(1, sqlDate);
             statement.setString(2, newSchedule);
             statement.setBoolean(3, isReminder);
             statement.setBoolean(4, isHomework);
             statement.executeUpdate();
             connection.commit();
+
+            // 로그에 일정 정보와 체크박스 상태를 기록
             logger.info("새로운 일정 추가됨: " + newSchedule);
+            logger.info("리마인더 상태: " + (isReminder ? "활성화" : "비활성화"));
+            logger.info("과제 상태: " + (isHomework ? "활성화" : "비활성화"));
 
             // 추가된 일정의 ID를 반환
-            return statement.getGeneratedKeys().getInt(1);
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("일정 생성 실패, ID를 얻을 수 없음.");
+                }
+            }
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "일정 추가 중 오류 발생", e);
             rollbackConnection();
