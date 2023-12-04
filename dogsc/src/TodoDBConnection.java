@@ -257,6 +257,97 @@ public class TodoDBConnection {
     }
 
 
+
+    public TodoData getTodoDataFromText(String todoText) {
+        TodoData todoData = new TodoData();
+
+        try {
+            initializeDatabaseConnection();
+            String selectSQL = "SELECT order_index, todoDate, todoText, is_completed FROM todoDB WHERE todoText = ?";
+            try (PreparedStatement statement = connection.prepareStatement(selectSQL)) {
+                statement.setString(1, todoText);
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    if (resultSet.next()) {
+                        todoData.setOrderIndex(resultSet.getInt("order_index"));
+                        todoData.setTodoDate(resultSet.getString("todoDate"));
+                        todoData.setTodoText(resultSet.getString("todoText"));
+                        todoData.setCompleted(resultSet.getInt("is_completed"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            handleSQLException(e);
+        }
+
+        return todoData;
+    }
+
+    public void updateOrderIndex(String todoText, int newOrderIndex, String todoDate, int is_completed) throws SQLException {
+        initializeDatabaseConnection();
+
+        // 순서가 변경된 항목 삭제
+        String deleteQuery = "DELETE FROM todoDB WHERE order_index = ?";
+        PreparedStatement deleteStatement = connection.prepareStatement(deleteQuery);
+        deleteStatement.setInt(1, newOrderIndex);
+        deleteStatement.executeUpdate();
+
+        // 삭제된 항목 대신 새로운 값 삽입
+        String insertQuery = "INSERT INTO todoDB (order_index, todoDate, todoText, is_completed) VALUES (?, ?, ?, ?)";
+        PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
+        insertStatement.setInt(1, newOrderIndex); // order_index 값 설정
+        insertStatement.setString(2, todoDate); // todoDate 값 설정
+        insertStatement.setString(3, todoText); // todoText 값 설정
+        insertStatement.setInt(4, is_completed); // is_completed 값 설정
+        insertStatement.executeUpdate();
+        connection.commit();
+    }
+
+
+    public void increaseOrderIndexIfDuplicate(int orderIndex) throws SQLException {
+        initializeDatabaseConnection();
+
+        // 동일한 orderIndex를 가진 다른 todoText 찾기
+        String findQuery = "SELECT * FROM todoDB WHERE order_index = ?";
+        PreparedStatement findStatement = connection.prepareStatement(findQuery);
+        findStatement.setInt(1, orderIndex);
+        ResultSet resultSet = findStatement.executeQuery();
+
+        // 동일한 orderIndex를 가진 todoText가 있다면 해당 todoText의 orderIndex를 +1하여 업데이트
+        while (resultSet.next()) {
+            int currentOrderIndex = resultSet.getInt("order_index");
+            String foundTodoDate = resultSet.getString("todoDate");
+            String foundTodoText = resultSet.getString("todoText");
+            int foundCompleted = resultSet.getInt("is_completed");
+
+            // 해당 todoText의 orderIndex를 +1하여 업데이트
+            updateOrderIndex(foundTodoText, currentOrderIndex + 1,foundTodoDate,foundCompleted);
+        }
+    }
+
+    public void decreaseOrderIndexIfDuplicate(int orderIndex) throws SQLException {
+        initializeDatabaseConnection();
+
+        // 동일한 orderIndex를 가진 다른 todoText 찾기
+        String findQuery = "SELECT * FROM todoDB WHERE order_index = ?";
+        PreparedStatement findStatement = connection.prepareStatement(findQuery);
+        findStatement.setInt(1, orderIndex);
+        ResultSet resultSet = findStatement.executeQuery();
+
+        // 동일한 orderIndex를 가진 todoText가 있다면 해당 todoText의 orderIndex를 +1하여 업데이트
+        while (resultSet.next()) {
+            int currentOrderIndex = resultSet.getInt("order_index");
+            String foundTodoDate = resultSet.getString("todoDate");
+            String foundTodoText = resultSet.getString("todoText");
+            int foundCompleted = resultSet.getInt("is_completed");
+
+            // 해당 todoText의 orderIndex를 +1하여 업데이트
+            updateOrderIndex(foundTodoText, currentOrderIndex - 1,foundTodoDate,foundCompleted);
+        }
+    }
+}
+
+
+
     /**
      * 투두 내용으로 투두의 데이터 전부를 가져옴
      *

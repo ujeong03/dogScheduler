@@ -12,6 +12,7 @@ import java.io.InputStream;
 public class Guide extends JFrame {
 
 
+
     /**버튼 조작을 위한 필드*/
     private RoundButton nextButton;
     /**버튼 조작을 위한 필드*/
@@ -20,6 +21,7 @@ public class Guide extends JFrame {
     /**폰트 설정 위한 필드*/
     InputStream inputStream = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
     /**폰트 설정 위한 필드*/
+
     Font guidefont;
     {
         try {
@@ -31,9 +33,11 @@ public class Guide extends JFrame {
         }
     }
 
+
     /**이미지 조정을 위한 필드*/
     private JLabel imageLabel;
     /**이미지 조정을 위한 필드*/
+
     private int currentImageIndex = 0;
     /**이미지 조정을 위한 필드*/
     private String[] imagePaths = new String[]{
@@ -51,7 +55,9 @@ public class Guide extends JFrame {
 
     /**
      * Guide 클래스의 생성자
+
      * 이미지, 이전 및 다음 버튼
+
      */
     public Guide() {
         setTitle("멍멍 ! 🐶 사용자 가이드");
@@ -62,8 +68,10 @@ public class Guide extends JFrame {
 
 
         imageLabel = new JLabel();
+
         imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+
         prevButton = new RoundButton("이전");
         prevButton.setFont(guidefont);
         nextButton = new RoundButton("다음");
@@ -86,7 +94,9 @@ public class Guide extends JFrame {
         });
 
 
+
         //상단 패널에 이전 버튼과 다음 버튼 추가
+
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(30, 700, 0, 0));

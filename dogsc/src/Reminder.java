@@ -25,9 +25,11 @@ public class Reminder extends JPanel {
     /**리마인더 아이템을 담기 위한 객체*/
     private List<ReminderItem> reminderItems;
 
+
     /**폰트*/
     InputStream inputStream = getClass().getResourceAsStream("font/BMJUA_ttf.ttf");
     /**폰트*/
+
     Font reminderfont;
 
     {
@@ -41,7 +43,9 @@ public class Reminder extends JPanel {
     }
 
 
+
     /**리마인더 배경화면*/
+
     ImageIcon reminderBGIcon = new ImageIcon("image/reminderBG.png");
     /**리마인더 배경화면 이미지*/
     Image reminderBG = reminderBGIcon.getImage();
