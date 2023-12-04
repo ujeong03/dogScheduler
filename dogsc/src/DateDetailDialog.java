@@ -5,7 +5,9 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-
+/**
+ * DateDetailDialog 클래스는 선택된 날짜에 대한 일정을 관리하는 다이얼로그를 나타냅니다.
+ */
 public class DateDetailDialog extends JDialog {
     private Date selectedDate;
     private CalendarDBConnection dbConnection;
@@ -18,6 +20,14 @@ public class DateDetailDialog extends JDialog {
     private Schedule selectedSchedule; // 선택된 일정
     private CalendarWindow calendarWindow;
 
+    /**
+     * DateDetailDialog 클래스의 생성자입니다.
+     *
+     * @param parent 부모 프레임
+     * @param date 선택된 날짜
+     * @param db CalendarDBConnection 객체
+     */
+
     public DateDetailDialog(JFrame parent, Date date, CalendarDBConnection db) {
         super(parent, "스케줄 관리", true);
         this.selectedDate = date;
@@ -28,7 +38,9 @@ public class DateDetailDialog extends JDialog {
         setupUI();
 
     }
-
+    /**
+     * 사용자 인터페이스를 설정하는 메서드입니다.
+     */
     private void setupUI() {
         setLayout(new BorderLayout());
         setSize(800, 300);
@@ -95,14 +107,20 @@ public class DateDetailDialog extends JDialog {
 
     }
 
-
+    /**
+     * 저장 버튼 활성화 상태를 설정하는 메서드입니다.
+     */
     private void enableSaveButton() {
         // 일정 입력 필드에 내용이 있을 때만 저장 버튼 활성화
         String text = inputTextField.getText();
         saveButton.setEnabled(!text.isEmpty());
     }
 
-
+    /**
+     * 스케줄 패널을 추가하는 메서드입니다.
+     *
+     * @param schedule 추가할 스케줄 객체
+     */
 
     private void addSchedulePanel(Schedule schedule) {
         JPanel schedulePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -155,7 +173,9 @@ public class DateDetailDialog extends JDialog {
         schedulesPanel.revalidate();
         schedulesPanel.repaint();
     }
-
+    /**
+     * 일정을 저장하는 메서드입니다.
+     */
     private void saveSchedule() {
         String text = inputTextField.getText();
         boolean isReminder = reminderCheckbox.isSelected();
