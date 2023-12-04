@@ -7,11 +7,17 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * CalendarDBConnection 클래스는 캘린더 애플리케이션과 SQLite 데이터베이스 간의 연결을 관리합니다.
+ */
 public class CalendarDBConnection {
     private static final Logger logger = Logger.getLogger(CalendarDBConnection.class.getName());
     private static final String calendarDB = "jdbc:sqlite:src/database.sqlite";
     private static Connection connection;
 
+    /**
+     * CalendarDBConnection 클래스의 생성자입니다.
+     */
     public CalendarDBConnection() {
         initializeDatabaseConnection();
     }
@@ -40,10 +46,18 @@ public class CalendarDBConnection {
         }
     }
 
+    /**
+     * 데이터베이스 연결을 반환합니다.
+     *
+     * @return 데이터베이스 연결 객체
+     */
     public static synchronized Connection getConnection() {
         return connection;
     }
 
+    /**
+     * 데이터베이스 연결을 닫습니다.
+     */
     public static void closeConnection() {
         try {
             if (connection != null) {
@@ -55,33 +69,41 @@ public class CalendarDBConnection {
         }
     }
 
-
     /**
-     * 지정한 날짜의 일정을 가져오는 메서드.
+     * 지정한 날짜의 일정을 가져오는 메서드입니다.
+     *
      * @param date 조회할 날짜
      * @return 해당 날짜의 일정 목록
      */
     public List<String> getSchedulesForDate(Date date) {
         List<String> schedules = new ArrayList<>();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String formattedDate = sdf.format(date);
-        String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
+        try {
+            initializeDatabaseConnection();
+            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(date);
+            String selectSQL = "SELECT * FROM calendarDB WHERE calendardate = ?";
 
-        try (PreparedStatement statement = getConnection().prepareStatement(selectSQL)) {
+            PreparedStatement statement = connection.prepareStatement(selectSQL);
             statement.setString(1, formattedDate);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                while (resultSet.next()) {
-                    String schedule = resultSet.getString("schedule");
-                    schedules.add(schedule);
-                }
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                String schedule = resultSet.getString("schedule");
+                schedules.add(schedule);
             }
         } catch (SQLException e) {
-            logger.log(Level.SEVERE, "일정 조회 실패", e);
+            e.printStackTrace();
+        } finally {
+            closeConnection();
         }
         return schedules;
     }
 
-
+    /**
+     * 지정한 날짜의 상세 일정 목록을 가져오는 메서드입니다.
+     *
+     * @param date 조회할 날짜
+     * @return 해당 날짜의 상세 일정 목록
+     */
     public List<Schedule> getSchedulesDetailsForDate(Date date) {
         List<Schedule> schedules = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -107,7 +129,11 @@ public class CalendarDBConnection {
         return schedules;
     }
 
-
+    /**
+     * 일정을 업데이트하는 메서드입니다.
+     *
+     * @param schedule 업데이트할 일정
+     */
     public void updateSchedule(Schedule schedule) {
         String updateSQL = "UPDATE calendarDB SET schedule = ?, reminder = ?, homework = ? WHERE id = ?";
 
@@ -130,16 +156,16 @@ public class CalendarDBConnection {
         }
     }
 
-
-
-
-
-
-
-
+    /**
+     * 새로운 일정을 추가하는 메서드입니다.
+     *
+     * @param date         일정 날짜
+     * @param newSchedule  추가할 일정 내용
+     * @param isReminder   리마인더 체크 여부
+     * @param isHomework   과제 체크 여부
+     * @return 추가된 일정의 ID
+     */
     public int addSchedule(String date, String newSchedule, boolean isReminder, boolean isHomework) {
-
-
         String insertSQL = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
@@ -170,8 +196,6 @@ public class CalendarDBConnection {
         }
     }
 
-
-
     private void rollbackConnection() {
         try {
             if (connection != null) {
@@ -182,6 +206,11 @@ public class CalendarDBConnection {
         }
     }
 
+    /**
+     * 일정을 삭제하는 메서드입니다.
+     *
+     * @param scheduleId 삭제할 일정의 ID
+     */
     public void deleteSchedule(int scheduleId) {
         String deleteSQL = "DELETE FROM calendarDB WHERE id = ?";
 
@@ -196,12 +225,16 @@ public class CalendarDBConnection {
         }
     }
 
-
+    /**
+     * 데이터베이스에 대한 PreparedStatement를 생성하는 메서드입니다.
+     *
+     * @param query SQL 쿼리 문자열
+     * @return PreparedStatement 객체
+     * @throws SQLException SQL 예외 발생 시
+     */
     public PreparedStatement prepareStatement(String query) throws SQLException {
         return getConnection().prepareStatement(query);
     }
 }
-
-
 
 
