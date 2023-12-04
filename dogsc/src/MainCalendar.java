@@ -17,31 +17,37 @@ import java.util.spi.CalendarNameProvider;
 
 /**
  * 메인 페이지의 캘린더를 위한 클래스
+ * @author ujeong
  */
 public class MainCalendar extends JPanel {
-   //날짜 조정
+    /**날짜 조정을 위한 필드*/
     private Date currentDate;
+    /**이번주가 시작하는 날짜*/
     private Date currentStartDate;
 
-   // 버튼
+    /**캘린더 버튼을 담을 패널*/
     private JPanel calendarControlPanel;
+    /**이전 버튼*/
     private RoundButton prevButton;
+    /**다음 버튼*/
     private RoundButton nextButton;
+    /**캘린더를 보기 위한 버튼 (이미지로 대체)*/
     private ImageIcon openCalendarButton;
 
-   //캘린더 패널
+    /**캘린더 패널*/
     private JPanel calendarPanel;
 
-    //데이터베이스
+    /**데이터 베이스*/
     private CalendarDBConnection calendarDB;
 
-    //폰트
+    /**폰트를 위한 필드*/
     InputStream inputStream = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
+    /**폰트를 위한 필드*/
     Font calendarfont;
 
     {
         try {
-            calendarfont = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(Font.BOLD,10);
+            calendarfont = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(Font.BOLD,12);
         } catch (FontFormatException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -50,11 +56,11 @@ public class MainCalendar extends JPanel {
     }
 
 
-
     /**
      * MainCalendar 클래스의 생성자
-     * 기본적인 틀을 조정합니다.
-     * 버튼과 캘린더 프레임이 만들어집니다.
+     * <br>
+     * 기본적인 틀 조정
+     * 버튼과 캘린더 프레임
      */
     public MainCalendar() {
 
@@ -108,7 +114,6 @@ public class MainCalendar extends JPanel {
         calendarControlPanel.add(openCalendarLabel);
         calendarControlPanel.add(nextButton);
 
-
         //요일
         JPanel dayOfWeekPanel = new JPanel();
         dayOfWeekPanel.setBackground(Color.WHITE);
@@ -122,7 +127,6 @@ public class MainCalendar extends JPanel {
         topPanel.setBackground(Color.WHITE); // Set background color
         topPanel.add(calendarControlPanel, BorderLayout.NORTH);
         topPanel.add(dayOfWeekPanel, BorderLayout.CENTER);
-
 
         // 캘린더 패널
         calendarPanel = new JPanel();
@@ -219,7 +223,6 @@ public class MainCalendar extends JPanel {
             JPanel schedulesPanel = new JPanel(new GridLayout(schedules.size(), 1)); // 일정을 세로로 표시하기 위한 패널
             schedulesPanel.setBackground(new Color(252,247,244));
 
-
             for (String schedule : schedules) {
                 JLabel scheduleLabel = new JLabel("V " + schedule);
                 scheduleLabel.setFont(calendarfont);
@@ -298,7 +301,7 @@ public class MainCalendar extends JPanel {
      * 오늘이 며칠인지 확인하기 위한 메서드
      *
      * @param date
-     * @return
+     * @return 연도, 월, 일
      */
     private boolean isToday(Date date) {
         Calendar today = Calendar.getInstance();
@@ -309,5 +312,3 @@ public class MainCalendar extends JPanel {
                 today.get(Calendar.DAY_OF_MONTH) == calendar.get(Calendar.DAY_OF_MONTH);
     }
 }
-
-

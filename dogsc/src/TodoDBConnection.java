@@ -6,21 +6,23 @@ import java.util.List;
 
 
 /**
- * TodoList 어플리케이션의 데이터베이스 연동을 담당하는 클래스입니다.
+ * TodoList 어플리케이션의 데이터베이스 연동을 담당
+ * @author ujeong
  */
 public class TodoDBConnection {
     private Connection connection;
     private String todoDB = "jdbc:sqlite:src/database.sqlite";
 
     /**
-     * 데이터베이스 연결을 초기화합니다.
+     * TodoDBConnection 생성자
+     * 데이터베이스 연결 초기화
      */
     public TodoDBConnection() {
         initializeDatabaseConnection();
     }
 
     /**
-     * 데이터베이스 연결을 초기화합니다.
+     * 데이터베이스 연결 초기화.
      */
     private void initializeDatabaseConnection() {
         try {
@@ -43,12 +45,11 @@ public class TodoDBConnection {
             }
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-            System.out.println("Todo 데이터베이스에 연결 안됨");
         }
     }
 
     /**
-     * 데이터베이스 연결을 반환합니다.
+     * 데이터베이스 연결 반환
      *
      * @return 데이터베이스 연결 객체
      */
@@ -57,13 +58,12 @@ public class TodoDBConnection {
     }
 
     /**
-     * 데이터베이스 연결을 닫습니다.
+     * 데이터베이스 연결 닫기
      */
     public void closeConnection() {
         try {
             if (connection != null && !connection.isClosed()) {
                 connection.close();
-                System.out.println("Todo 데이터베이스 연결 닫힘");
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -71,21 +71,21 @@ public class TodoDBConnection {
     }
 
     /**
-     * 새로운 투두를 데이터베이스에 추가합니다.
+     * 새로운 투두를 데이터베이스에 추가
      *
      * @param todoText 추가할 투두의 텍스트
      * @param todoDate 투두의 날짜
      */
     public void addTodoDB(String todoText, Date todoDate) {
         try {
-            initializeDatabaseConnection();
+            initializeDatabaseConnection();//초기화
+            // 처음 투두를 추가하면 달성여부는 0으로 초기화하여 데이터베이스에 추가
             String insertQuery = "INSERT INTO todoDB (todoDate, todoText, is_completed) VALUES (?, ?, 0);";
             try (PreparedStatement preparedStatement = connection.prepareStatement(insertQuery)) {
-                preparedStatement.setString(1, new SimpleDateFormat("yyyy-MM-dd").format(todoDate));
+                preparedStatement.setString(1, new SimpleDateFormat("yyyy-MM-dd").format(todoDate));//날짜 형식에 주의
                 preparedStatement.setString(2, todoText);
                 preparedStatement.executeUpdate();
-                connection.commit();
-                System.out.println("성공");
+                connection.commit(); //커밋
             }
         } catch (SQLException e) {
             handleSQLException(e);
@@ -93,15 +93,15 @@ public class TodoDBConnection {
     }
 
     /**
-     * 투두를 수정합니다.
+     * 투두 수정
      *
      * @param oldText 수정 전 투두의 텍스트
      * @param newText 수정 후 투두의 텍스트
      */
-    public void modTodoDB(String oldText, String newText) {
+    public void modTodoDB(String oldText, String newText,String todoDate) {
         try {
             initializeDatabaseConnection();
-            String updateQuery = "UPDATE todoDB SET todoText = ? WHERE todoText = ?";
+            String updateQuery = "UPDATE todoDB SET todoText = ? WHERE todoText = ? and todoDate =?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(updateQuery)) {
                 preparedStatement.setString(1, newText);
                 preparedStatement.setString(2, oldText);
@@ -114,16 +114,17 @@ public class TodoDBConnection {
     }
 
     /**
-     * 투두를 삭제합니다.
+     * 투두 삭제
      *
      * @param todoText 삭제할 투두의 텍스트
      */
-    public void delTodoDB(String todoText) {
+    public void delTodoDB(String todoText,String todoDate) {
         try {
             initializeDatabaseConnection();
-            String deleteQuery = "DELETE FROM todoDB WHERE todoText = ?";
+            String deleteQuery = "DELETE FROM todoDB WHERE todoText = ? and todoDate =?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(deleteQuery)) {
                 preparedStatement.setString(1, todoText);
+                preparedStatement.setString(2,todoDate);
                 preparedStatement.executeUpdate();
                 connection.commit();
             }
@@ -133,12 +134,12 @@ public class TodoDBConnection {
     }
 
     /**
-     * 투두의 체크박스 상태를 업데이트합니다.
+     * 투두 체크박스 상태 업데이트
      *
      * @param todoText     업데이트할 투두의 텍스트
      * @param is_completed 체크박스 상태 (1: 체크, 0: 언체크)
      */
-    public void updateTodoChecked(String todoText, int is_completed) {
+    public void updateTodoChecked(String todoText, String todoDate, int is_completed) {
         try {
             initializeDatabaseConnection();
             String updateQuery = "UPDATE todoDB SET is_completed = ? WHERE todoText = ?";
@@ -154,7 +155,7 @@ public class TodoDBConnection {
     }
 
     /**
-     * 특정 날짜의 투두 리스트를 가져옵니다.
+     * 특정 날짜의 투두 리스트를 가져옴
      *
      * @param date 가져올 투두의 날짜
      * @return 해당 날짜의 투두 리스트
@@ -182,7 +183,7 @@ public class TodoDBConnection {
     }
 
     /**
-     * 투두의 체크박스 상태를 가져옵니다.
+     * 투두의 체크박스 상태를 가져옴
      *
      * @param todo 투두의 텍스트
      * @return 체크박스 상태 (1: 체크, 0: 언체크)
@@ -208,7 +209,7 @@ public class TodoDBConnection {
     }
 
     /**
-     * SQLException을 처리하는 메서드입니다.
+     * SQLException을 처리하는 메서드
      *
      * @param e SQLException 객체
      */
@@ -222,11 +223,8 @@ public class TodoDBConnection {
         }
     }
 
-
-
-
     /**
-     * 특정 날짜의 완료된 투두의 수를 가져옵니다.
+     * 특정 날짜의 완료된 투두의 수를 가져옴
      *
      * @param currentDate 기준이 되는 날짜
      * @return 완료된 투두의 수
@@ -259,6 +257,12 @@ public class TodoDBConnection {
     }
 
 
+    /**
+     * 투두 내용으로 투두의 데이터 전부를 가져옴
+     *
+     * @param todoText
+     * @return
+     */
     public TodoData getTodoDataFromText(String todoText) {
         TodoData todoData = new TodoData();
 
@@ -283,6 +287,17 @@ public class TodoDBConnection {
         return todoData;
     }
 
+    /**
+     * 투두의 순서를 바꾸기 위해 orderIndex를 업데이트 하는 메서드
+     *
+     * orderIndex는 primary key이므로 해당 데이터를 삭제하고 추가하는 과정 필요
+     *
+     * @param todoText
+     * @param newOrderIndex 새롭게 바꿀 인덱스
+     * @param todoDate
+     * @param is_completed
+     * @throws SQLException
+     */
     public void updateOrderIndex(String todoText, int newOrderIndex, String todoDate, int is_completed) throws SQLException {
         initializeDatabaseConnection();
 
@@ -303,7 +318,11 @@ public class TodoDBConnection {
         connection.commit();
     }
 
-
+    /**
+     * 똑같은 orderIndex를 가진 데이터를 찾아 해당 인덱스를 증가 시키는 메서드
+     * @param orderIndex
+     * @throws SQLException
+     */
     public void increaseOrderIndexIfDuplicate(int orderIndex) throws SQLException {
         initializeDatabaseConnection();
 
@@ -325,6 +344,11 @@ public class TodoDBConnection {
         }
     }
 
+    /**
+     * 똑같은 orderIndex를 가진 데이터를 찾아 index를 감소
+     * @param orderIndex
+     * @throws SQLException
+     */
     public void decreaseOrderIndexIfDuplicate(int orderIndex) throws SQLException {
         initializeDatabaseConnection();
 
@@ -334,16 +358,15 @@ public class TodoDBConnection {
         findStatement.setInt(1, orderIndex);
         ResultSet resultSet = findStatement.executeQuery();
 
-        // 동일한 orderIndex를 가진 todoText가 있다면 해당 todoText의 orderIndex를 +1하여 업데이트
+        // 동일한 orderIndex를 가진 todoText가 있다면 해당 todoText의 orderIndex를 -1하여 업데이트
         while (resultSet.next()) {
             int currentOrderIndex = resultSet.getInt("order_index");
             String foundTodoDate = resultSet.getString("todoDate");
             String foundTodoText = resultSet.getString("todoText");
             int foundCompleted = resultSet.getInt("is_completed");
 
-            // 해당 todoText의 orderIndex를 +1하여 업데이트
+            // 해당 todoText의 orderIndex를 -1하여 업데이트
             updateOrderIndex(foundTodoText, currentOrderIndex - 1,foundTodoDate,foundCompleted);
         }
     }
 }
-

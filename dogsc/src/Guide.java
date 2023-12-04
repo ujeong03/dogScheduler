@@ -6,18 +6,20 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * 사용자 가이드를 보여주는 프레임 클래스입니다.
+ * 멍멍 사용법을 위한 클래스
+ * @author ujeong
  */
 public class Guide extends JFrame {
-    //이미지
-    private JLabel imageLabel;
 
-    //버튼
+
+    /**버튼 조작을 위한 필드*/
     private RoundButton nextButton;
+    /**버튼 조작을 위한 필드*/
     private RoundButton prevButton;
 
-    //폰트
+    /**폰트 설정 위한 필드*/
     InputStream inputStream = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
+    /**폰트 설정 위한 필드*/
     Font guidefont;
     {
         try {
@@ -29,31 +31,45 @@ public class Guide extends JFrame {
         }
     }
 
-    //이미지 전환
+    /**이미지 조정을 위한 필드*/
+    private JLabel imageLabel;
+    /**이미지 조정을 위한 필드*/
     private int currentImageIndex = 0;
+    /**이미지 조정을 위한 필드*/
     private String[] imagePaths = new String[]{
-            "guide_page_img/guide_img1.png",
-            "guide_page_img/test1.png"
+            "image/guide_img/guide1.jpg",
+            "image/guide_img/guide2.jpg",
+            "image/guide_img/guide3.jpg",
+            "image/guide_img/guide4.jpg",
+            "image/guide_img/guide5.jpg",
+            "image/guide_img/guide6.jpg",
+            "image/guide_img/guide7.jpg",
+            "image/guide_img/guide8.jpg",
+            "image/guide_img/guide9.jpg",
+            "image/guide_img/guide10.jpg"
     };
 
     /**
      * Guide 클래스의 생성자
-     * 프레임의 기본 설정 및 컴포넌트 초기화를 수행합니다.
+     * 이미지, 이전 및 다음 버튼
      */
     public Guide() {
         setTitle("멍멍 ! 🐶 사용자 가이드");
 
-        // 프레임을 전체 화면 크기로 만들기
+        //프레임을 전체 화면 크기로 만들기
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+
         imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setVerticalAlignment(SwingConstants.CENTER);
         prevButton = new RoundButton("이전");
         prevButton.setFont(guidefont);
         nextButton = new RoundButton("다음");
         nextButton.setFont(guidefont);
 
-        // 이전 버튼 클릭 시
+        //이전 버튼 클릭 시
         prevButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -61,7 +77,7 @@ public class Guide extends JFrame {
             }
         });
 
-        // 다음 버튼 클릭 시
+        //다음 버튼 클릭 시
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -70,13 +86,14 @@ public class Guide extends JFrame {
         });
 
 
-        // 상단 패널에 이전 버튼과 다음 버튼 추가
+        //상단 패널에 이전 버튼과 다음 버튼 추가
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(30, 700, 0, 0));
         buttonPanel.add(prevButton);
         buttonPanel.add(Box.createRigidArea(new Dimension(40, 0)));
         buttonPanel.add(nextButton);
+
 
         // 전체 프레임에 버튼 패널과 중앙 패널 추가
         setLayout(new BorderLayout());
