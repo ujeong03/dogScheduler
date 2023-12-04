@@ -107,6 +107,22 @@ public class CalendarDBConnection {
         return schedules;
     }
 
+    public void updateSchedule(Schedule schedule) {
+        String updateSQL = "UPDATE calendarDB SET schedule = ?, reminder = ?, homework = ? WHERE id = ?";
+
+        try (PreparedStatement statement = getConnection().prepareStatement(updateSQL)) {
+            statement.setString(1, schedule.getText());
+            statement.setBoolean(2, schedule.isReminder());
+            statement.setBoolean(3, schedule.isHomework());
+            statement.setInt(4, schedule.getId());
+            statement.executeUpdate();
+            connection.commit();
+            logger.info("일정 업데이트됨: " + schedule.getText());
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "일정 업데이트 중 오류 발생", e);
+            rollbackConnection();
+        }
+    }
 
 
 

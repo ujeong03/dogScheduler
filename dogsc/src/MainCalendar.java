@@ -78,10 +78,12 @@ public class MainCalendar extends JPanel {
         openCalendarButton = new ImageIcon(scaledImage);
         JLabel openCalendarLabel = new JLabel(openCalendarButton);
         // 캘린더 버튼 작동
+
+
         openCalendarLabel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                //new CalendarWindow();
+                new CalendarWindow();
             }
         });
 
