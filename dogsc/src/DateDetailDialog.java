@@ -16,16 +16,17 @@ public class DateDetailDialog extends JDialog {
     private JCheckBox homeworkCheckbox; // 과제 체크박스
     private JButton saveButton; // '저장' 버튼
     private Schedule selectedSchedule; // 선택된 일정
+    private CalendarWindow calendarWindow;
 
     public DateDetailDialog(JFrame parent, Date date, CalendarDBConnection db) {
-        super(parent, "일정 세부사항", true);
+        super(parent, "스케줄 관리", true);
         this.selectedDate = date;
         this.dbConnection = db;
 
         getContentPane().setBackground(Color.WHITE);
 
         setupUI();
-        loadSchedules();
+
     }
 
     private void setupUI() {
@@ -36,8 +37,7 @@ public class DateDetailDialog extends JDialog {
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel dateInfoLabel = new JLabel("날짜: " + new SimpleDateFormat("yyyy-MM-dd").format(selectedDate));
         topPanel.add(dateInfoLabel);
-        addButton = new JButton("일정추가");
-        topPanel.add(addButton);
+
 
         add(topPanel, BorderLayout.NORTH);
 
@@ -45,6 +45,15 @@ public class DateDetailDialog extends JDialog {
         schedulesPanel = new JPanel();
         schedulesPanel.setLayout(new BoxLayout(schedulesPanel, BoxLayout.Y_AXIS));
         add(new JScrollPane(schedulesPanel), BorderLayout.CENTER);
+        schedulesPanel.removeAll();
+
+        List<Schedule> schedules = dbConnection.getSchedulesDetailsForDate(selectedDate);
+        for (Schedule schedule : schedules) {
+            addSchedulePanel(schedule);
+        }
+        schedulesPanel.revalidate();
+        schedulesPanel.repaint();
+
 
         // 하단 패널: 일정 입력, 체크박스, 저장 버튼 추가
         JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -82,7 +91,10 @@ public class DateDetailDialog extends JDialog {
         bottomPanel.add(saveButton);
 
         add(bottomPanel, BorderLayout.SOUTH);
+
+
     }
+
 
     private void enableSaveButton() {
         // 일정 입력 필드에 내용이 있을 때만 저장 버튼 활성화
@@ -90,22 +102,17 @@ public class DateDetailDialog extends JDialog {
         saveButton.setEnabled(!text.isEmpty());
     }
 
-    private void loadSchedules() {
-        schedulesPanel.removeAll();
-        List<Schedule> schedules = dbConnection.getSchedulesDetailsForDate(selectedDate);
-        for (Schedule schedule : schedules) {
-            addSchedulePanel(schedule);
-        }
-        schedulesPanel.revalidate();
-        schedulesPanel.repaint();
-    }
+
 
     private void addSchedulePanel(Schedule schedule) {
         JPanel schedulePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JTextField scheduleTextField = new JTextField(20);
         JCheckBox reminder = new JCheckBox("리마인더");
         JCheckBox homework = new JCheckBox("과제");
-        JButton updateButton = new JButton("수정"); // 버튼 이름을 "수정"으로 변경
+
+        JButton updateButton = new JButton("수정");
+        JButton deleteButton = new JButton("삭제");
+
 
         // 선택된 일정이 있을 경우, 해당 일정 정보를 텍스트 필드 및 체크박스에 설정
         if (schedule != null) {
@@ -115,23 +122,36 @@ public class DateDetailDialog extends JDialog {
         }
 
         updateButton.addActionListener(e -> {
-            // 새로운 Schedule 객체를 생성
+            // selectedDate를 Date 타입으로 변환하여 사용
+            Date selectedDate = this.selectedDate; // 선택된 날짜를 가져옴
             assert schedule != null;
             Schedule updatedSchedule = new Schedule(schedule.getId(), scheduleTextField.getText(),
-                    schedule.getDate(), // 여기에는 실제 날짜 정보가 들어가야 합니다.
+                    selectedDate, // Date 타입으로 변환한 selectedDate를 사용
                     reminder.isSelected(), homework.isSelected());
             // updateSchedule 메소드를 호출하여 데이터베이스에 변경 사항을 저장
             dbConnection.updateSchedule(updatedSchedule);
         });
+
+        deleteButton.addActionListener(e -> {
+            assert schedule != null;
+            int scheduleId = schedule.getId(); // 삭제할 일정의 ID를 가져옴
+            dbConnection.deleteSchedule(scheduleId); // deleteSchedule 메소드를 호출하여 데이터베이스에서 해당 일정을 삭제
+            saveSchedule();
+        });
+
+
+
+
 
 
         schedulePanel.add(scheduleTextField);
         schedulePanel.add(reminder);
         schedulePanel.add(homework);
         schedulePanel.add(updateButton);
+        schedulePanel.add(deleteButton);
 
         // UI 갱신
-        schedulesPanel.add(schedulePanel);
+        schedulesPanel.add(schedulePanel); // 기존의 변수 이름을 변경하지 않고 그대로 사용
         schedulesPanel.revalidate();
         schedulesPanel.repaint();
     }
@@ -143,22 +163,23 @@ public class DateDetailDialog extends JDialog {
 
         if (!text.isEmpty()) {
             // 데이터베이스에 일정 추가하고 id 받아오기
-            int scheduleId = dbConnection.addSchedule(selectedDate, text, isReminder, isHomework);
+            String formattedDate = new SimpleDateFormat("yyyy-MM-dd").format(selectedDate);
+            System.out.println("날짜"+formattedDate);
+            int scheduleId = dbConnection.addSchedule(formattedDate, text, isReminder, isHomework);
+
+            // Schedule 객체 생성 시 schedule.getDate() 사용
+            Schedule newSchedule = new Schedule(scheduleId, text, selectedDate, isReminder, isHomework);
 
             // 입력된 텍스트 정보를 사용하여 스케줄 패널에 일정 추가
-            addSchedulePanel(new Schedule(scheduleId, text, text, isReminder, isHomework));
+            addSchedulePanel(newSchedule);
 
             // 입력 필드 및 체크박스 초기화
             inputTextField.setText("");
             reminderCheckbox.setSelected(false);
             homeworkCheckbox.setSelected(false);
             enableSaveButton();
+            calendarWindow.updateCalendar();
         }
     }
-
-
-
-
-
-
 }
+
