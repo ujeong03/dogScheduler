@@ -2,6 +2,8 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +22,9 @@ public class DateDetailDialog extends JDialog {
     private Schedule selectedSchedule; // 선택된 일정
     private CalendarWindow calendarWindow;
 
+
+
+
     /**
      * DateDetailDialog 클래스의 생성자입니다.
      *
@@ -36,6 +41,7 @@ public class DateDetailDialog extends JDialog {
         getContentPane().setBackground(Color.WHITE);
 
         setupUI();
+
 
     }
     /**
@@ -172,6 +178,7 @@ public class DateDetailDialog extends JDialog {
         schedulesPanel.add(schedulePanel); // 기존의 변수 이름을 변경하지 않고 그대로 사용
         schedulesPanel.revalidate();
         schedulesPanel.repaint();
+
     }
     /**
      * 일정을 저장하는 메서드입니다.
@@ -202,4 +209,6 @@ public class DateDetailDialog extends JDialog {
         }
     }
 }
+
+
 
