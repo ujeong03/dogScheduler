@@ -13,9 +13,18 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CancellationException;
 
+/**
+ * CalendarWindow 클래스는 캘린더 애플리케이션의 메인 윈도우를 나타냅니다.
+ */
 public class CalendarWindow extends JFrame {
-
+    /**
+     * 사용자 정의 폰트를 로드하기 위한 InputStream 객체입니다.
+     */
     InputStream inputStream = getClass().getResourceAsStream("font/BMJUA_ttf.ttf");
+
+    /**
+     * 캘린더 애플리케이션에서 사용할 폰트 객체입니다.
+     */
     Font reminderfont;
 
     {
@@ -27,18 +36,64 @@ public class CalendarWindow extends JFrame {
             throw new RuntimeException(e);
         }
     }
-    private Calendar selectedCalendar; // 선택된 날짜를 저장하는 변수
-    private Calendar calendar; // 캘린더 객체
-    private Date currentDate; // 날짜 정보
-    private JLabel monthLabel; // 월 표시 레이블
-    private JPanel calendarPanel; // 캘린더 패널
-    private JButton prevButton, nextButton; // 이전 월, 다음 월 이동 버튼
-    private final String[] dayNames = {"일", "월", "화", "수", "목", "금", "토"}; // 요일 이름 배열
+    /**
+     * 선택된 날짜를 저장하는 변수입니다.
+     */
+    private Calendar selectedCalendar;
 
-    private CalendarDBConnection calendarDB; // 데이터베이스 연결 객체
+    /**
+     * 캘린더 객체입니다.
+     */
+    private Calendar calendar;
 
-    private List<JScrollPane> dayScrollPaneList; // JScrollPane 목록을 저장하는 리스트
-    private JTextArea[][] dayTextAreaArray; // JTextArea 배열로 각 일자의 일정을 표시
+    /**
+     * 날짜 정보를 저장하는 변수입니다.
+     */
+    private Date currentDate;
+
+    /**
+     * 월을 표시하는 레이블입니다.
+     */
+    private JLabel monthLabel;
+
+    /**
+     * 캘린더 패널입니다.
+     */
+    private JPanel calendarPanel;
+
+    /**
+     * 이전 월로 이동하는 버튼입니다.
+     */
+    private JButton prevButton;
+
+    /**
+     * 다음 월로 이동하는 버튼입니다.
+     */
+    private JButton nextButton;
+
+    /**
+     * 요일 이름 배열입니다.
+     */
+    private final String[] dayNames = {"일", "월", "화", "수", "목", "금", "토"};
+
+    /**
+     * 데이터베이스 연결을 관리하는 객체입니다.
+     */
+    private CalendarDBConnection calendarDB;
+
+    /**
+     * JScrollPane 목록을 저장하는 리스트입니다.
+     */
+    private List<JScrollPane> dayScrollPaneList;
+
+    /**
+     * 각 일자의 일정을 표시하기 위한 JTextArea 배열입니다.
+     */
+    private JTextArea[][] dayTextAreaArray;
+
+    /**
+     * CalendarWindow 클래스의 생성자입니다.
+     */
 
     public CalendarWindow() {
         calendar = Calendar.getInstance(Locale.getDefault()); // 로케일에 따른 현재 날짜와 시간을 가지는 캘린더 객체 생성
@@ -101,13 +156,19 @@ public class CalendarWindow extends JFrame {
         setVisible(true); // 윈도우 표시
     }
 
-    // 월 이동 메서드
+    /**
+     * 월을 이동하는 메서드입니다.
+     *
+     * @param delta 월 이동량 (양수는 다음 월, 음수는 이전 월)
+     */
     private void navigateMonths(int delta) {
         calendar.add(Calendar.MONTH, delta); // 현재 월에 delta를 더해 다음 또는 이전 월로 이동
         updateCalendar(); // 캘린더 업데이트
     }
 
-    // 캘린더 업데이트 메서드
+    /**
+     * 캘린더를 업데이트하는 메서드입니다.
+     */
     protected void updateCalendar() {
         calendarPanel.removeAll();
         JPanel daysPanel = new JPanel(new GridLayout(0, 7, 5, 5)); // 그리드 레이아웃을 사용해 일자를 표시할 패널 생성
@@ -173,7 +234,11 @@ public class CalendarWindow extends JFrame {
     }
 
 
-    // DateDetailDialog를 여는 메서드
+    /**
+     * 선택된 일자에 대한 상세 정보를 표시하는 다이얼로그를 엽니다.
+     *
+     * @param selectedDay 선택된 일자
+     */
     private void openDateDetailDialog(int selectedDay) {
         // 현재 선택된 월과 선택된 일자를 사용하여 날짜 생성
         calendar = Calendar.getInstance();
@@ -193,7 +258,11 @@ public class CalendarWindow extends JFrame {
 
 
 
-
+    /**
+     * 캘린더 애플리케이션의 진입점입니다.
+     *
+     * @param args 명령줄 인수 (사용하지 않음)
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new CalendarWindow()); // Swing 스레드에서 윈도우 생성
     }
