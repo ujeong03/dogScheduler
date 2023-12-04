@@ -97,7 +97,7 @@ public class CalendarDBConnection {
                     boolean isReminder = resultSet.getBoolean("reminder");
                     boolean isHomework = resultSet.getBoolean("homework");
 
-                    Schedule schedule = new Schedule(id, scheduleText, formattedDate, isReminder, isHomework);
+                    Schedule schedule = new Schedule(id, scheduleText, date, isReminder, isHomework);
                     schedules.add(schedule);
                 }
             }
@@ -106,6 +106,7 @@ public class CalendarDBConnection {
         }
         return schedules;
     }
+
 
     public void updateSchedule(Schedule schedule) {
         String updateSQL = "UPDATE calendarDB SET schedule = ?, reminder = ?, homework = ? WHERE id = ?";
@@ -136,13 +137,13 @@ public class CalendarDBConnection {
 
 
 
-    public int addSchedule(Date date, String newSchedule, boolean isReminder, boolean isHomework) {
-        java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+    public int addSchedule(String date, String newSchedule, boolean isReminder, boolean isHomework) {
+
 
         String insertSQL = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement statement = getConnection().prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
-            statement.setObject(1, sqlDate);
+            statement.setObject(1, date);
             statement.setString(2, newSchedule);
             statement.setBoolean(3, isReminder);
             statement.setBoolean(4, isHomework);
@@ -181,9 +182,26 @@ public class CalendarDBConnection {
         }
     }
 
+    public void deleteSchedule(int scheduleId) {
+        String deleteSQL = "DELETE FROM calendarDB WHERE id = ?";
+
+        try (PreparedStatement statement = getConnection().prepareStatement(deleteSQL)) {
+            statement.setInt(1, scheduleId);
+            statement.executeUpdate();
+            connection.commit();
+            logger.info("일정 삭제됨: ID = " + scheduleId);
+        } catch (SQLException e) {
+            logger.log(Level.SEVERE, "일정 삭제 중 오류 발생", e);
+            rollbackConnection();
+        }
+    }
+
+
     public PreparedStatement prepareStatement(String query) throws SQLException {
         return getConnection().prepareStatement(query);
     }
 }
+
+
 
 
