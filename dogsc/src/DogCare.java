@@ -19,16 +19,24 @@ import java.time.LocalDateTime;
  * 보상으로 먹이, 목욕, 장난감을 강아지에게 제공하거나 강아지를 쓰다듬은 후 친밀도 및 레벨을 상승시키는 강아지 케어 클래스입니다.
  */
 public class DogCare {
-    private int touchCount;  // 쓰다듬기 횟수를 저장
-    private String touchPath;  // 쓰다듬기 횟수가 저장된 파일 경로
+    /** 쓰다듬기 횟수를 저장하는 변수입니다. */
+    private int touchCount;
 
-    // 클래스 객체 선언
+    /** 쓰다듬기 횟수가 저장된 파일의 경로입니다. */
+    private String touchPath;
+
+    /** {@code ControlReward} 클래스의 객체를 저장하기 위한 변수입니다. */
     private ControlReward controlReward;
+
+    /** {@code DogLevel} 클래스의 객체를 저장하기 위한 변수입니다. */
     private DogLevel dogLevel;
 
-    // 대화 상자 생성을 위한 객체 선언
+    /** 대화 상자 생성을 위한 {@code JOptionPane} 객체입니다. */
     private JOptionPane optionPane;
+
+    /** 프레임을 생성하기 위한 {@code JFrame} 객체입니다. */
     private JFrame frame;
+
 
 
     /**
@@ -70,7 +78,6 @@ public class DogCare {
      * 파일에서 현재 강아지 클릭 횟수를 읽고 반환합니다.
      *
      * @return 현재 강아지 클릭 횟수
-     * @exception FileNotFoundException
      */
     public int getTouchCount() {
         try {
@@ -90,7 +97,6 @@ public class DogCare {
     /**
      * 강아지를 클릭할 때마다 쓰다듬기 횟수를 1씩 증가시키고 파일에 저장합니다.
      *
-     * @exception IOException
      */
     public void addTouchCount() {
         try {
@@ -109,8 +115,6 @@ public class DogCare {
     /**
      * 매일 자정에 강아지 클릭 횟수를 0으로 초기화합니다.
      *
-     * @exception IOException
-     * @exception InterruptedException
      */
     public void resetTouchCount() {
         try {

@@ -11,42 +11,88 @@ import static java.awt.Font.createFont;
  * 강아지 키우기 페이지의 UI를 구성하는 클래스입니다.
  */
 public class DogPage {
-    // 프레임 및 패널
+    /** 보상바를 위한 {@code JPanel}입니다. */
     private JPanel rewardBar;
+
+    /** 프레임을 생성하기 위한 {@code JFrame} 객체입니다. */
     private JFrame frame;
 
-    // 버튼, 라벨, 프로그레스바
-    private JButton dogButton, feedButton, soapButton, ballButton;
-    private JLabel title, rewardLabel, levelLabel, heart, play, bath, eat, contentPane;
+    /** 강아지 버튼을 나타내는 객체입니다. */
+    private JButton dogButton;
+
+    /** 먹이 버튼을 나타내는 객체입니다. */
+    private JButton feedButton;
+
+    /** 비누 버튼을 나타내는 객체입니다. */
+    private JButton soapButton;
+
+    /** 장난감 버튼을 나타내는 객체입니다. */
+    private JButton ballButton;
+
+    /** 제목 라벨을 나타내는 객체입니다. */
+    private JLabel title;
+
+    /** 보상 개수 라벨을 나타내는 객체입니다. */
+    private JLabel rewardLabel;
+
+    /** 강아지 레벨 라벨을 나타내는 객체입니다. */
+    private JLabel levelLabel;
+
+    /** 쓰다듬기 효과 라벨을 나타내는 객체입니다. */
+    private JLabel heart;
+
+    /** 장난감 효과 라벨을 나타내는 객체입니다. */
+    private JLabel play;
+
+    /** 목욕 효과 라벨을 나타내는 객체입니다. */
+    private JLabel bath;
+
+    /** 먹기 효과 라벨을 나타내는 객체입니다. */
+    private JLabel eat;
+
+    /** contentPane을 라벨로서 나타내는 객체입니다. */
+    private JLabel contentPane;
+
+    /** 친밀도를 나타내기 위한 프로그레스바입니다. */
     private JProgressBar closenessProgressBar;
 
-    // 클래스 객체 선언
+    /** 강아지 케어를 위한 {@code DogCare} 클래스의 객체입니다. */
     private DogCare dogCare;
+
+    /** 보상 관리를 위한 {@code ControlReward} 클래스의 객체입니다. */
     private ControlReward controlReward;
+
+    /** 강아지 레벨을 관리하기 위한 {@code DogLevel} 클래스의 객체입니다. */
     private DogLevel dogLevel;
 
-    // 폰트 관련 객체 생성
+    /** BMJUA_ttf.ttf 파일을 통해 제목용 폰트를 생성하는 객체입니다. */
     InputStream inputStream1 = getClass().getResourceAsStream("font/BMJUA_ttf.ttf");
+
+    /** 제목용 폰트 객체입니다. */
     Font titlefont;
     {
         try {
-            titlefont = createFont(Font.TRUETYPE_FONT, inputStream1).deriveFont(Font.BOLD,50);
+            titlefont = createFont(Font.TRUETYPE_FONT, inputStream1).deriveFont(Font.BOLD, 50);
         } catch (FontFormatException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /** IM_Hyemin-Bold.ttf 파일을 통해 라벨용 폰트를 생성하는 객체입니다. */
     InputStream inputStream2 = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
+
+    /** 라벨용 폰트 객체입니다. */
     Font labelfont;
     {
         try {
-            labelfont = createFont(Font.TRUETYPE_FONT, inputStream2).deriveFont(Font.BOLD,25);
+            labelfont = createFont(Font.TRUETYPE_FONT, inputStream2).deriveFont(Font.BOLD, 25);
         } catch (FontFormatException | IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    
+
+
     /**
      * DogPage 클래스의 생성자입니다.
      * 강아지 키우기 페이지의 UI를 구성하고 보여줍니다.
@@ -56,7 +102,7 @@ public class DogPage {
         this.controlReward = new ControlReward();
         this.dogCare = new DogCare();
         this.dogLevel = new DogLevel();
-        
+
         // 쓰다듬기 횟수 제한
         dogCare.resetTouchCount();
 
@@ -247,7 +293,7 @@ public class DogPage {
 
 
     /**
-     * 먹이, 비누, 장난감 버튼을 눌렀을 때 해당하는 이미지를 팝업시킵니다.
+     * 먹이, 비누, 장난감, 강아지 버튼을 눌렀을 때 해당하는 이미지를 팝업시킵니다.
      *
      * @param rewardImageLabel 보상 사용 시 해당하는 효과 이미지
      */

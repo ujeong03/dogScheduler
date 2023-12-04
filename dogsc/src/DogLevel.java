@@ -5,9 +5,20 @@ import java.util.Scanner;
  * 강아지의 친밀도, 레벨을 반환하거나 상승시키며, 강아지를 성장시키는 강아지 레벨 클래스
  */
 public class DogLevel {
-    private String closenessPath, levelPath;  // 각각 친밀도와 레벨을 저장하는 파일 경로
-    private int closeness, level;  // 각각 친밀도와 레벨을 저장
-    private String dogImagePath;  // 성장 단계에 해당하는 강아지 이미지 경로
+    /** 친밀도를 저장하는 파일 경로입니다. */
+    private String closenessPath;
+
+    /** 레벨을 저장하는 파일 경로입니다. */
+    private String levelPath;
+
+    /** 친밀도를 저장하는 변수입니다. */
+    private int closeness;
+
+    /** 레벨을 저장하는 변수입니다. */
+    private int level;
+
+    /** 성장 단계에 해당하는 강아지 이미지 경로입니다. */
+    private String dogImagePath;
 
 
     /**
@@ -27,7 +38,6 @@ public class DogLevel {
      * 파일에서 현재 친밀도를 읽고 반환합니다.
      *
      * @return 현재 친밀도
-     * @exception FileNotFoundException
      */
     public int getCloseness() {
         try {
@@ -50,7 +60,6 @@ public class DogLevel {
      * 파일에서 현재 레벨을 읽고 반환합니다.
      *
      * @return 현재 레벨
-     * @exception FileNotFoundException
      */
     public int getLevel() {
         try {
@@ -73,7 +82,6 @@ public class DogLevel {
      * 보상이나 쓰다듬기에 해당하는 친밀도를 상승시키고 파일에 저장합니다.
      *
      * @param num 증가시킬 친밀도
-     * @exception IOException
      */
     public void increaseCloseness(int num) {
         this.closeness += num;
@@ -92,7 +100,6 @@ public class DogLevel {
     /**
      * 친밀도가 100 이상이면 친밀도를 100 감소시키고, 레벨을 1 증가시킨 후 파일에 저장합니다.
      *
-     * @exception IOException
      */
     public void increaseLevel() {
         if (this.closeness >= 100) {
