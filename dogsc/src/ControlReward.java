@@ -6,11 +6,16 @@ import java.util.Scanner;
  * 보상의 반환, 추가, 사용 등 보상을 관리하는 클래스입니다.
  */
 public class ControlReward {
-    private int rewardCount;  // 보상 개수를 저장
-    private String rewardPath;  // 보상 개수가 저장된 파일 경로
+    /** 보상 개수를 저장하는 변수입니다. */
+    private int rewardCount;
 
-    // 대화 상자 생성을 위한 객체 선언
+    /** 보상 개수를 저장하는 파일 경로입니다. */
+    private String rewardPath;
+
+    /** 대화 상자 생성을 위한 {@code JOptionPane} 객체입니다. */
     private JOptionPane optionPane;
+
+    /** 프레임을 생성하기 위한 {@code JFrame} 객체입니다. */
     private JFrame frame;
 
 
@@ -27,7 +32,6 @@ public class ControlReward {
      * 파일에서 현재 보상 개수를 읽고 반환합니다.
      *
      * @return 현재 보상 개수
-     * @exception FileNotFoundException
      */
     public int getReward() {
         try {
@@ -48,7 +52,6 @@ public class ControlReward {
      * 투두를 달성한만큼 보상을 추가하고 파일에 저장합니다.
      *
      * @param num 추가할 보상 개수
-     * @exception IOException
      */
     public void addReward(int num){
         try {
@@ -68,7 +71,6 @@ public class ControlReward {
     /**
      * 보상을 사용할 때마다 1씩 감소시키고 파일에 저장합니다.
      *
-     * @exception IOException
      */
     public void useReward() {
         try {
