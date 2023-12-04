@@ -1,12 +1,13 @@
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 둥근 모양의 버튼으로 바꾸기 위한 클래스
+ * https://leirbag.tistory.com/15 에서 참조한 코드입니다.
+ */
 public class RoundButton extends JButton {
-    public RoundButton() { super(); decorate(); }
     public RoundButton(String text) { super(text); decorate(); }
-    public RoundButton(Action action) { super(action); decorate(); }
-    public RoundButton(Icon icon) { super(icon); decorate(); }
-    public RoundButton(String text, Icon icon) { super(text, icon); decorate(); }
+
     protected void decorate() { setBorderPainted(false); setOpaque(false); }
     @Override
     protected void paintComponent(Graphics g) {
