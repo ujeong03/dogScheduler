@@ -1,6 +1,7 @@
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -9,7 +10,12 @@ public class DateDetailDialog extends JDialog {
     private Date selectedDate;
     private CalendarDBConnection dbConnection;
     private JPanel schedulesPanel;
-    private JButton addButton; // '+' 버튼
+    private JButton addButton; // '일정추가' 버튼
+    private JTextField inputTextField; // 일정 내용을 입력하는 텍스트 상자
+    private JCheckBox reminderCheckbox; // 리마인더 체크박스
+    private JCheckBox homeworkCheckbox; // 과제 체크박스
+    private JButton saveButton; // '저장' 버튼
+    private Schedule selectedSchedule; // 선택된 일정
 
     public DateDetailDialog(JFrame parent, Date date, CalendarDBConnection db) {
         super(parent, "일정 세부사항", true);
@@ -24,14 +30,13 @@ public class DateDetailDialog extends JDialog {
 
     private void setupUI() {
         setLayout(new BorderLayout());
-        setSize(600, 300);
+        setSize(800, 300);
 
         // 상단 패널: '+' 버튼
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JLabel dateInfoLabel = new JLabel("날짜: " + new SimpleDateFormat("yyyy-MM-dd").format(selectedDate));
         topPanel.add(dateInfoLabel);
         addButton = new JButton("일정추가");
-        addButton.addActionListener(e -> addNewSchedulePanel());
         topPanel.add(addButton);
 
         add(topPanel, BorderLayout.NORTH);
@@ -40,6 +45,49 @@ public class DateDetailDialog extends JDialog {
         schedulesPanel = new JPanel();
         schedulesPanel.setLayout(new BoxLayout(schedulesPanel, BoxLayout.Y_AXIS));
         add(new JScrollPane(schedulesPanel), BorderLayout.CENTER);
+
+        // 하단 패널: 일정 입력, 체크박스, 저장 버튼 추가
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        inputTextField = new JTextField(20);
+        reminderCheckbox = new JCheckBox("리마인더");
+        homeworkCheckbox = new JCheckBox("과제");
+        saveButton = new JButton("저장");
+        saveButton.setEnabled(false);
+
+        // 일정 입력 필드 내용이 변경될 때만 저장 버튼 활성화
+        DocumentListener documentListener = new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                enableSaveButton();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                enableSaveButton();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                enableSaveButton();
+            }
+        };
+
+        inputTextField.getDocument().addDocumentListener(documentListener);
+
+        saveButton.addActionListener(e -> saveSchedule());
+
+        bottomPanel.add(inputTextField);
+        bottomPanel.add(reminderCheckbox);
+        bottomPanel.add(homeworkCheckbox);
+        bottomPanel.add(saveButton);
+
+        add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    private void enableSaveButton() {
+        // 일정 입력 필드에 내용이 있을 때만 저장 버튼 활성화
+        String text = inputTextField.getText();
+        saveButton.setEnabled(!text.isEmpty());
     }
 
     private void loadSchedules() {
@@ -52,50 +100,56 @@ public class DateDetailDialog extends JDialog {
         schedulesPanel.repaint();
     }
 
-    private void addNewSchedulePanel() {
-        // 새로운 일정 객체를 생성하고, 이를 패널에 추가
-        Schedule schedule = new Schedule(-1, "", selectedDate.toString(), false, false);
-        addSchedulePanel(schedule);
-        schedulesPanel.revalidate();
-        schedulesPanel.repaint();
-    }
-
     private void addSchedulePanel(Schedule schedule) {
         JPanel schedulePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JTextField scheduleTextField = new JTextField(schedule.getText(), 20);
-        JCheckBox reminder = new JCheckBox("리마인더", schedule.isReminder());
-        JCheckBox homework = new JCheckBox("과제", schedule.isHomework());
+        JTextField scheduleTextField = new JTextField(20);
+        JCheckBox reminder = new JCheckBox("리마인더");
+        JCheckBox homework = new JCheckBox("과제");
         JButton saveButton = new JButton("저장");
 
-        saveButton.addActionListener(e -> saveSchedule(schedule.getId(), scheduleTextField, reminder, homework));
+        // 선택된 일정이 있을 경우, 해당 일정 정보를 텍스트 필드 및 체크박스에 설정
+        if (schedule != null) {
+            scheduleTextField.setText(schedule.getText());
+            reminder.setSelected(schedule.isReminder());
+            homework.setSelected(schedule.isHomework());
+        }
+
+        saveButton.addActionListener(e -> saveSchedule());
 
         schedulePanel.add(scheduleTextField);
         schedulePanel.add(reminder);
         schedulePanel.add(homework);
         schedulePanel.add(saveButton);
-        schedulesPanel.add(schedulePanel);
 
         // UI 갱신
+        schedulesPanel.add(schedulePanel);
         schedulesPanel.revalidate();
         schedulesPanel.repaint();
     }
 
-    private void saveSchedule(int id, JTextField scheduleTextField, JCheckBox reminder, JCheckBox homework) {
-        String text = scheduleTextField.getText();
-        boolean isReminder = reminder.isSelected();
-        boolean isHomework = homework.isSelected();
+    private void saveSchedule() {
+        String text = inputTextField.getText();
+        boolean isReminder = reminderCheckbox.isSelected();
+        boolean isHomework = homeworkCheckbox.isSelected();
 
-        if (id == -1) {
-            // 새로운 일정 추가
-            dbConnection.addSchedule(selectedDate, text, isReminder, isHomework);
-        } else {
-            dbConnection.updateSchedule(new Schedule(id, text, selectedDate.toString(), isReminder, isHomework));
+        if (!text.isEmpty()) {
+            // 데이터베이스에 일정 추가하고 id 받아오기
+            int scheduleId = dbConnection.addSchedule(selectedDate, text, isReminder, isHomework);
+
+            // 입력된 텍스트 정보를 사용하여 스케줄 패널에 일정 추가
+            addSchedulePanel(new Schedule(scheduleId, text, text, isReminder, isHomework));
+
+            // 입력 필드 및 체크박스 초기화
+            inputTextField.setText("");
+            reminderCheckbox.setSelected(false);
+            homeworkCheckbox.setSelected(false);
+            enableSaveButton();
         }
-        loadSchedules();
     }
+
+
+
+
+
+
 }
-
-
-
-
-

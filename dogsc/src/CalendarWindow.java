@@ -60,11 +60,8 @@ public class CalendarWindow extends JFrame {
         JPanel headerPanel = new JPanel(new GridLayout(1, 7, 5, 5)); // 그리드 레이아웃을 사용해 1행 7열로 설정
         for (String dayName : dayNames) {
             JLabel dayLabel = new JLabel(dayName, JLabel.CENTER); // 중앙 정렬된 요일 레이블
-            if ("일".equals(dayName)) {
-                dayLabel.setForeground(Color.RED); // 일요일은 빨간색으로 표시
-            } else if ("토".equals(dayName)) {
-                dayLabel.setForeground(Color.BLUE); // 토요일은 파란색으로 표시
-            }
+            dayLabel.setFont(new Font("Arial", Font.BOLD, 16));
+            dayLabel.setForeground(Color.BLACK); // 글자색을 검은색으로 설정
             headerPanel.add(dayLabel); // 요일 레이블을 요일 헤더 패널에 추가
         }
         calendarPanel.add(headerPanel, BorderLayout.NORTH); // 요일 헤더 패널을 캘린더 패널의 상단에 추가
@@ -132,3 +129,5 @@ public class CalendarWindow extends JFrame {
         SwingUtilities.invokeLater(() -> new CalendarWindow()); // Swing 스레드에서 윈도우 생성
     }
 }
+
+

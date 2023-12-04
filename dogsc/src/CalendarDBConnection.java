@@ -130,7 +130,7 @@ public class CalendarDBConnection {
 
 
 
-    public void addSchedule(Date date, String newSchedule, boolean isReminder, boolean isHomework) {
+    public int addSchedule(Date date, String newSchedule, boolean isReminder, boolean isHomework) {
         java.sql.Date sqlDate = new java.sql.Date(date.getTime());
 
         String insertSQL = "INSERT INTO calendarDB (calendardate, schedule, reminder, homework) VALUES (?, ?, ?, ?)";
@@ -143,11 +143,17 @@ public class CalendarDBConnection {
             statement.executeUpdate();
             connection.commit();
             logger.info("새로운 일정 추가됨: " + newSchedule);
+
+            // 추가된 일정의 ID를 반환
+            return statement.getGeneratedKeys().getInt(1);
         } catch (SQLException e) {
             logger.log(Level.SEVERE, "일정 추가 중 오류 발생", e);
             rollbackConnection();
+            return -1; // 오류 발생 시 -1을 반환하거나 예외를 던질 수 있습니다.
         }
     }
+
+
 
     private void rollbackConnection() {
         try {
