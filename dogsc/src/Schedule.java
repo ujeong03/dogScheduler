@@ -1,19 +1,18 @@
 import java.util.Date;
 
 public class Schedule {
-    private int id; // 일정의 고유 ID
-    private String text; // 일정의 내용
-    private String date; // 일정의 날짜
-    private boolean reminder; // 리마인더 여부
-    private boolean homework; // 과제 여부
+    private int id;
+    private String text;
+    private Date date;
+    private boolean isReminder;
+    private boolean isHomework;
 
-    // 생성자
-    public Schedule(int id, String text, String date, boolean reminder, boolean homework) {
+    public Schedule(int id, String text, Date date, boolean isReminder, boolean isHomework) {
         this.id = id;
         this.text = text;
         this.date = date;
-        this.reminder = reminder;
-        this.homework = homework;
+        this.isReminder = isReminder;
+        this.isHomework = isHomework;
     }
 
     // Getters and Setters
@@ -33,27 +32,27 @@ public class Schedule {
         this.text = text;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
     public boolean isReminder() {
-        return reminder;
+        return isReminder;
     }
 
     public void setReminder(boolean reminder) {
-        this.reminder = reminder;
+        isReminder = reminder;
     }
 
     public boolean isHomework() {
-        return homework;
+        return isHomework;
     }
 
     public void setHomework(boolean homework) {
-        this.homework = homework;
+        isHomework = homework;
     }
 }
