@@ -2,37 +2,74 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
- * 사용자 가이드를 보여주는 프레임 클래스입니다.
+ * 멍멍 사용법을 위한 클래스
+ * @author ujeong
  */
 public class Guide extends JFrame {
-    private JLabel imageLabel;
-    private JButton nextButton;
-    private JButton prevButton;
 
+
+    /**버튼 조작을 위한 필드*/
+    private RoundButton nextButton;
+    /**버튼 조작을 위한 필드*/
+    private RoundButton prevButton;
+
+    /**폰트 설정 위한 필드*/
+    InputStream inputStream = getClass().getResourceAsStream("font/IM_Hyemin-Bold.ttf");
+    /**폰트 설정 위한 필드*/
+    Font guidefont;
+    {
+        try {
+            guidefont = Font.createFont(Font.TRUETYPE_FONT, inputStream).deriveFont(Font.BOLD,20);
+        } catch (FontFormatException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**이미지 조정을 위한 필드*/
+    private JLabel imageLabel;
+    /**이미지 조정을 위한 필드*/
     private int currentImageIndex = 0;
+    /**이미지 조정을 위한 필드*/
     private String[] imagePaths = new String[]{
-            "guide_page_img/guide_img1.png",
-            "guide_page_img/test1.png"
+            "image/guide_img/guide1.jpg",
+            "image/guide_img/guide2.jpg",
+            "image/guide_img/guide3.jpg",
+            "image/guide_img/guide4.jpg",
+            "image/guide_img/guide5.jpg",
+            "image/guide_img/guide6.jpg",
+            "image/guide_img/guide7.jpg",
+            "image/guide_img/guide8.jpg",
+            "image/guide_img/guide9.jpg",
+            "image/guide_img/guide10.jpg"
     };
 
     /**
-     * Guide 클래스의 생성자입니다.
-     * 프레임의 기본 설정 및 컴포넌트 초기화를 수행합니다.
+     * Guide 클래스의 생성자
+     * 이미지, 이전 및 다음 버튼
      */
     public Guide() {
-        setTitle("사용법");
+        setTitle("멍멍 ! 🐶 사용자 가이드");
 
-        // 프레임을 전체 화면 크기로 만들기
+        //프레임을 전체 화면 크기로 만들기
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        imageLabel = new JLabel();
-        prevButton = new JButton("이전");
-        nextButton = new JButton("다음");
 
-        // 이전 버튼 클릭 시
+        imageLabel = new JLabel();
+        imageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        imageLabel.setVerticalAlignment(SwingConstants.CENTER);
+        prevButton = new RoundButton("이전");
+        prevButton.setFont(guidefont);
+        nextButton = new RoundButton("다음");
+        nextButton.setFont(guidefont);
+
+        //이전 버튼 클릭 시
         prevButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -40,7 +77,7 @@ public class Guide extends JFrame {
             }
         });
 
-        // 다음 버튼 클릭 시
+        //다음 버튼 클릭 시
         nextButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -48,14 +85,15 @@ public class Guide extends JFrame {
             }
         });
 
-        // 상단 패널에 이전 버튼과 다음 버튼 추가
+
+        //상단 패널에 이전 버튼과 다음 버튼 추가
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
-        buttonPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 왼쪽 여백 추가
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(30, 700, 0, 0));
         buttonPanel.add(prevButton);
-        buttonPanel.add(Box.createHorizontalGlue()); // 가운데 여백 추가
+        buttonPanel.add(Box.createRigidArea(new Dimension(40, 0)));
         buttonPanel.add(nextButton);
-        buttonPanel.add(Box.createRigidArea(new Dimension(10, 0))); // 오른쪽 여백 추가
+
 
         // 전체 프레임에 버튼 패널과 중앙 패널 추가
         setLayout(new BorderLayout());
@@ -67,7 +105,7 @@ public class Guide extends JFrame {
     }
 
     /**
-     * 현재 인덱스에 해당하는 이미지를 화면에 표시합니다.
+     * 현재 인덱스에 해당하는 이미지 표시
      *
      * @param index 표시할 이미지의 인덱스
      */
@@ -78,7 +116,7 @@ public class Guide extends JFrame {
     }
 
     /**
-     * 다음 이미지를 표시합니다.
+     * 다음 이미지 표시
      */
     private void showNextImage() {
         if (currentImageIndex < imagePaths.length - 1) {
@@ -88,7 +126,7 @@ public class Guide extends JFrame {
     }
 
     /**
-     * 이전 이미지를 표시합니다.
+     * 이전 이미지 표시
      */
     private void showPreviousImage() {
         if (currentImageIndex > 0) {
